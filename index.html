@@ -28,7 +28,8 @@
     </div>
     <div class="navbar-links">
       <a href="index.html" class="nav-link">首页</a>
-      <a href="admin.html" class="nav-link">管理</a>
+      <!-- 仅已登录的管理员可见，匿名访客看不到此入口 -->
+      <a href="admin.html" id="adminLink" class="nav-link" style="display:none;">管理</a>
     </div>
   </div>
 </nav>
@@ -92,7 +93,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
-import { api } from './js/api.js';
+import { api, isLoggedIn } from './js/api.js';
+
+// 「管理」入口仅对已登录管理员显示；匿名访客直接浏览，无需任何登录
+if (isLoggedIn()) {
+  const adminLink = document.getElementById('adminLink');
+  if (adminLink) adminLink.style.display = '';
+}
 
 // ── 状态 ──────────────────────────────────────────────────────────────────
 let state = { page: 1, categoryId: null, sort: 'created_at', q: '', totalPages: 1 };

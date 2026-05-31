@@ -13,29 +13,67 @@ export function clearToken()      { localStorage.removeItem(TOKEN_KEY); }
 export function isLoggedIn()      { return !!getToken(); }
 
 // ── 核心请求函数 ──────────────────────────────────────────────────────────
+//
+// opts.auth === true 表示这是「需要登录」的后台接口：
+//   - 自动附带 Authorization: Bearer <token>
+//   - 收到 401 时清除 token 并跳转到 admin.html（重新登录）
+// 公开接口（首页 / 视频详情 / 分类 / Banner / 设置）不传 auth：
+//   - 完全不携带 token
+//   - 即使返回 401 也只抛错，绝不跳转登录页
 async function req(path, opts = {}) {
+  const needAuth = opts.auth === true;
   const token = getToken();
   const headers = { ...(opts.headers || {}) };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  // 非 FormData 时自动加 Content-Type: application/json
-  if (opts.body && !(opts.body instanceof FormData) && typeof opts.body === 'object') {
+  // 仅后台接口附带 token；公开页面请求不带，保证完全匿名访问
+  if (needAuth && token) headers['Authorization'] = `Bearer ${token}`;
+
+  // 纯 JSON 对象才转成 JSON 字符串。
+  // FormData（文件上传）和 URLSearchParams（登录表单）必须原样传给 fetch，
+  // 由浏览器/调用方自行设置正确的 Content-Type，不可被覆盖成 application/json。
+  const body = opts.body;
+  const isRaw = body instanceof FormData || body instanceof URLSearchParams;
+  if (body && !isRaw && typeof body === 'object') {
     headers['Content-Type'] = 'application/json';
-    opts = { ...opts, body: JSON.stringify(opts.body) };
+    opts = { ...opts, body: JSON.stringify(body) };
   }
 
   const res = await fetch(API_BASE + path, { ...opts, headers });
 
-  if (res.status === 401) { clearToken(); window.location.href = 'admin.html'; return; }
+  if (res.status === 401) {
+    clearToken();
+    // 只有后台接口在 session 失效时才跳转登录页；公开页面与登录请求只抛错
+    if (needAuth && token) { window.location.href = 'admin.html'; return; }
+    throw new Error(await parseError(res, '用户名或密码错误'));
+  }
 
   if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j.detail || JSON.stringify(j); } catch { }
-    throw new Error(msg);
+    throw new Error(await parseError(res, `HTTP ${res.status}`));
   }
 
   const ct = res.headers.get('content-type') || '';
   return ct.includes('application/json') ? res.json() : res.text();
+}
+
+/** 后台接口请求：自动带 token、401 时跳转登录 */
+function authReq(path, opts = {}) {
+  return req(path, { ...opts, auth: true });
+}
+
+/** 把后端错误响应解析成可读字符串，兼容 FastAPI 的 detail 字符串 / 422 detail 数组 */
+async function parseError(res, fallback) {
+  try {
+    const j = await res.json();
+    const d = j.detail;
+    if (typeof d === 'string') return d;
+    if (Array.isArray(d)) {
+      return d.map(e => e.msg || JSON.stringify(e)).join('; ');
+    }
+    if (d) return JSON.stringify(d);
+    return JSON.stringify(j);
+  } catch {
+    return fallback;
+  }
 }
 
 // ── 公开接口 ──────────────────────────────────────────────────────────────
@@ -81,77 +119,77 @@ export const api = {
       if (res?.access_token) saveToken(res.access_token);
       return res;
     },
-    /** 获取当前登录用户信息 */
-    me() { return req('/api/auth/me'); },
+    /** 获取当前登录用户信息（需要 token） */
+    me() { return authReq('/api/auth/me'); },
     /** 退出登录 */
     logout() { clearToken(); },
   },
 
-  // ── 管理接口（需要 JWT） ─────────────────────────────────────────────────
+  // ── 管理接口（需要 JWT，全部走 authReq） ──────────────────────────────────
   admin: {
     /** 仪表盘统计 */
-    stats() { return req('/api/admin/stats'); },
+    stats() { return authReq('/api/admin/stats'); },
 
     // -- 视频 --
     /** 分页获取视频列表（管理端，含分类信息） */
     videos(params = {}) {
-      return req('/api/admin/videos?' + new URLSearchParams(params));
+      return authReq('/api/admin/videos?' + new URLSearchParams(params));
     },
     /** 添加视频（multipart/form-data） */
     addVideo(formData) {
-      return req('/api/admin/videos/add', { method: 'POST', body: formData });
+      return authReq('/api/admin/videos/add', { method: 'POST', body: formData });
     },
     /** 批量上传视频 */
     batchUpload(formData) {
-      return req('/api/admin/videos/batch', { method: 'POST', body: formData });
+      return authReq('/api/admin/videos/batch', { method: 'POST', body: formData });
     },
     /** 编辑视频 */
     editVideo(id, formData) {
-      return req(`/api/admin/videos/${id}/edit`, { method: 'POST', body: formData });
+      return authReq(`/api/admin/videos/${id}/edit`, { method: 'POST', body: formData });
     },
     /** 删除视频 */
     deleteVideo(id) {
-      return req(`/api/admin/videos/${id}`, { method: 'DELETE' });
+      return authReq(`/api/admin/videos/${id}`, { method: 'DELETE' });
     },
 
     // -- 分类 --
     /** 新增分类 */
     addCategory(name) {
-      return req('/api/admin/categories', { method: 'POST', body: { name } });
+      return authReq('/api/admin/categories', { method: 'POST', body: { name } });
     },
     /** 删除分类 */
     deleteCategory(id) {
-      return req(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      return authReq(`/api/admin/categories/${id}`, { method: 'DELETE' });
     },
 
     // -- Banner --
     /** 获取 Banner 列表 */
     banners(pos = '') {
-      return req('/api/admin/banners' + (pos ? `?pos=${pos}` : ''));
+      return authReq('/api/admin/banners' + (pos ? `?pos=${pos}` : ''));
     },
     /** 新增 Banner */
     addBanner(data) {
-      return req('/api/admin/banners', { method: 'POST', body: data });
+      return authReq('/api/admin/banners', { method: 'POST', body: data });
     },
     /** 编辑 Banner */
     editBanner(id, data) {
-      return req(`/api/admin/banners/${id}`, { method: 'PUT', body: data });
+      return authReq(`/api/admin/banners/${id}`, { method: 'PUT', body: data });
     },
     /** 切换 Banner 启用状态 */
     toggleBanner(id) {
-      return req(`/api/admin/banners/${id}/toggle`, { method: 'POST' });
+      return authReq(`/api/admin/banners/${id}/toggle`, { method: 'POST' });
     },
     /** 删除 Banner */
     deleteBanner(id) {
-      return req(`/api/admin/banners/${id}`, { method: 'DELETE' });
+      return authReq(`/api/admin/banners/${id}`, { method: 'DELETE' });
     },
 
     // -- 设置 --
     /** 获取系统设置 */
-    getSettings() { return req('/api/admin/settings'); },
+    getSettings() { return authReq('/api/admin/settings'); },
     /** 保存系统设置 */
     saveSettings(data) {
-      return req('/api/admin/settings', { method: 'POST', body: data });
+      return authReq('/api/admin/settings', { method: 'POST', body: data });
     },
   },
 };
