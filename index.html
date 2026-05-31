@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VideoHub Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-brand">
+      <div class="brand-icon">
+        <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+          <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+        </svg>
+      </div>
+      <span class="grad-text" id="siteName">VideoHub Pro</span>
+    </a>
+    <div class="navbar-search">
+      <svg class="search-icon" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input id="searchInput" class="input" type="search" placeholder="搜索视频...">
+    </div>
+    <div class="navbar-links">
+      <a href="index.html" class="nav-link">首页</a>
+      <a href="admin.html" class="nav-link">管理</a>
+    </div>
+  </div>
+</nav>
+
+<!-- 顶部 Banner -->
+<div id="bannerTop" class="banner-top" style="display:none;">
+  <div class="swiper swiper-top">
+    <div class="swiper-wrapper" id="bannerTopSlides"></div>
+    <div class="swiper-pagination swiper-pagination-top"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+  </div>
+</div>
+
+<!-- 三栏布局 -->
+<div class="page-layout">
+  <!-- 左侧 Banner -->
+  <aside class="sidebar" id="leftSidebar" style="display:none;">
+    <div class="swiper sidebar-banner swiper-left" style="height:340px;">
+      <div class="swiper-wrapper" id="bannerLeftSlides"></div>
+      <div class="swiper-pagination swiper-pagination-left"></div>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="page-main">
+    <!-- 分类筛选 -->
+    <div id="filterRow" class="filter-row">
+      <button class="chip active" data-cat="">全部</button>
+    </div>
+
+    <!-- 标题行 -->
+    <div class="flex items-center justify-between" style="margin-bottom:.75rem;">
+      <h2 id="sectionTitle" style="font-size:.9375rem; font-weight:600;">最新视频</h2>
+      <span id="totalCount" class="text-muted text-xs"></span>
+    </div>
+
+    <!-- 视频网格 -->
+    <div id="videoGrid" class="video-grid">
+      <div class="loader-wrap"><div class="spinner"></div></div>
+    </div>
+
+    <!-- 分页 -->
+    <div id="pagination" class="pagination"></div>
+  </main>
+
+  <!-- 右侧 Banner -->
+  <aside class="sidebar" id="rightSidebar" style="display:none;">
+    <div class="swiper sidebar-banner swiper-right" style="height:340px;">
+      <div class="swiper-wrapper" id="bannerRightSlides"></div>
+      <div class="swiper-pagination swiper-pagination-right"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- 页脚 -->
+<footer id="footer">© 2024 VideoHub Pro</footer>
+
+<!-- Toast 容器 -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script type="module">
+import { api } from './js/api.js';
+
+// ── 状态 ──────────────────────────────────────────────────────────────────
+let state = { page: 1, categoryId: null, sort: 'created_at', q: '', totalPages: 1 };
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.getElementById('toastStack').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ── 视频卡片 ──────────────────────────────────────────────────────────────
+function videoCard(v) {
+  return `
+  <a href="video.html?id=${v.id}" class="video-card">
+    <div class="card-thumb">
+      <img src="${v.cover_url}" alt="${v.title}" loading="lazy"
+           onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+      <div class="card-play"><div class="card-play-btn">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+        </svg>
+      </div></div>
+      ${v.category_name ? `<span class="card-cat">${v.category_name}</span>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${v.title}</div>
+      <div class="card-meta">
+        <span>▶ ${v.views}</span>
+        <span>${v.created_at || ''}</span>
+      </div>
+    </div>
+  </a>`;
+}
+
+// ── 加载视频 ──────────────────────────────────────────────────────────────
+async function loadVideos() {
+  const grid = document.getElementById('videoGrid');
+  grid.innerHTML = '<div class="loader-wrap"><div class="spinner"></div></div>';
+
+  try {
+    const params = { page: state.page, page_size: 12, sort: state.sort };
+    if (state.categoryId) params.category_id = state.categoryId;
+
+    let data;
+    if (state.q.trim()) {
+      data = await api.search({ ...params, q: state.q });
+    } else {
+      data = await api.videos(params);
+    }
+
+    state.totalPages = data.pages || 1;
+    document.getElementById('totalCount').textContent = `${data.total} 个视频`;
+    document.getElementById('sectionTitle').textContent = state.q ? `搜索「${state.q}」` : '最新视频';
+
+    if (!data.items?.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.361a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+        </svg>
+        <p>暂无视频</p></div>`;
+    } else {
+      grid.innerHTML = data.items.map(videoCard).join('');
+    }
+    renderPagination();
+  } catch (e) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;color:#ef4444;">加载失败：${e.message}</div>`;
+  }
+}
+
+// ── 分页 ──────────────────────────────────────────────────────────────────
+function renderPagination() {
+  const el = document.getElementById('pagination');
+  if (state.totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  if (state.page > 1) html += `<button class="page-btn" onclick="goPage(${state.page - 1})">上一页</button>`;
+  const start = Math.max(1, state.page - 2), end = Math.min(state.totalPages, state.page + 2);
+  for (let i = start; i <= end; i++)
+    html += `<button class="page-btn${i === state.page ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  if (state.page < state.totalPages) html += `<button class="page-btn" onclick="goPage(${state.page + 1})">下一页</button>`;
+  el.innerHTML = html;
+}
+window.goPage = (p) => { state.page = p; loadVideos(); window.scrollTo(0, 0); };
+
+// ── 分类筛选 ──────────────────────────────────────────────────────────────
+async function loadCategories() {
+  try {
+    const cats = await api.categories();
+    const row = document.getElementById('filterRow');
+    cats.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.dataset.cat = c.id;
+      btn.textContent = c.name;
+      row.appendChild(btn);
+    });
+    row.addEventListener('click', e => {
+      const btn = e.target.closest('[data-cat]');
+      if (!btn) return;
+      row.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.categoryId = btn.dataset.cat || null;
+      state.page = 1;
+      loadVideos();
+    });
+  } catch { }
+}
+
+// ── Banner ────────────────────────────────────────────────────────────────
+async function loadBanners() {
+  try {
+    const data = await api.banners();
+
+    function fill(position, slidesId, wrapId, swiperClass, paginationClass) {
+      const items = data[position] || [];
+      if (!items.length) return;
+      document.getElementById(wrapId).style.display = '';
+      const slidesEl = document.getElementById(slidesId);
+      slidesEl.innerHTML = items.map(b =>
+        `<div class="swiper-slide">
+          <a href="${b.link_url || '#'}" ${b.link_url && b.link_url !== '#' ? 'target="_blank" rel="noopener"' : ''}>
+            <img src="${b.image_url}" alt="${b.title || ''}" style="width:100%;height:100%;object-fit:cover;">
+          </a>
+        </div>`
+      ).join('');
+      new Swiper(`.${swiperClass}`, {
+        loop: items.length > 1,
+        autoplay: items.length > 1 ? { delay: items[0].duration || 4000, disableOnInteraction: false } : false,
+        effect: position === 'top' ? 'fade' : 'slide',
+        fadeEffect: { crossFade: true },
+        pagination: { el: `.${paginationClass}`, clickable: true },
+        navigation: position === 'top' ? { prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' } : false,
+        speed: 500,
+      });
+    }
+
+    fill('top',   'bannerTopSlides',   'bannerTop',    'swiper-top',   'swiper-pagination-top');
+    fill('left',  'bannerLeftSlides',  'leftSidebar',  'swiper-left',  'swiper-pagination-left');
+    fill('right', 'bannerRightSlides', 'rightSidebar', 'swiper-right', 'swiper-pagination-right');
+  } catch { }
+}
+
+// ── 搜索 ──────────────────────────────────────────────────────────────────
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.q = e.target.value;
+    state.page = 1;
+    loadVideos();
+  }, 400);
+});
+
+// ── 网站设置 ──────────────────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const s = await api.settings();
+    if (s.site_name) {
+      document.getElementById('siteName').textContent = s.site_name;
+      document.title = s.site_name;
+    }
+    if (s.footer_text) document.getElementById('footer').textContent = s.footer_text;
+  } catch { }
+}
+
+// ── 初始化 ────────────────────────────────────────────────────────────────
+loadSettings();
+loadBanners();
+loadCategories();
+loadVideos();
+</script>
+</body>
+</html>

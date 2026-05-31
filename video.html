@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频详情 — VideoHub Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-brand">
+      <div class="brand-icon">
+        <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
+          <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+        </svg>
+      </div>
+      <span class="grad-text" id="siteName">VideoHub Pro</span>
+    </a>
+    <div class="navbar-links">
+      <a href="index.html" class="nav-link">← 返回首页</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-layout">
+  <main class="page-main">
+    <!-- 加载中 -->
+    <div id="loadingState" class="loader-wrap"><div class="spinner"></div></div>
+
+    <!-- 错误状态 -->
+    <div id="errorState" class="empty-state hidden">
+      <p id="errorMsg" style="color:#ef4444;"></p>
+      <a href="index.html" class="btn btn-outline mt-4">返回首页</a>
+    </div>
+
+    <!-- 视频内容 -->
+    <div id="videoContent" class="video-detail hidden">
+
+      <!-- 面包屑 -->
+      <nav id="breadcrumb" class="text-xs text-muted flex items-center gap-2" style="margin-bottom:.75rem; opacity:.7;">
+        <a href="index.html">首页</a>
+        <span>›</span>
+        <span id="bcCategory"></span>
+        <span id="bcSep" class="hidden">›</span>
+        <span id="bcTitle" class="text-muted truncate" style="max-width:200px;"></span>
+      </nav>
+
+      <!-- 播放器 -->
+      <div id="playerWrap" class="player-wrap"></div>
+
+      <!-- 视频信息 -->
+      <div class="video-info">
+        <h1 id="videoTitle" class="video-title"></h1>
+        <div class="video-meta">
+          <a id="categoryBadge" href="index.html" class="btn btn-sm btn-primary hidden"></a>
+          <span id="viewCount" class="text-muted"></span>
+          <span id="fileSize"  class="text-muted text-xs hidden"></span>
+          <span id="videoDate" class="text-muted text-xs"></span>
+        </div>
+        <p id="videoDesc" class="video-desc hidden"></p>
+      </div>
+
+      <!-- 相关视频 -->
+      <div id="relatedSection" class="hidden">
+        <h3 class="related-title">相关推荐</h3>
+        <div id="relatedGrid" class="video-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+<script type="module">
+import { api } from './js/api.js';
+
+const params = new URLSearchParams(location.search);
+const videoId = parseInt(params.get('id'));
+
+function show(id)  { document.getElementById(id).classList.remove('hidden'); }
+function hide(id)  { document.getElementById(id).classList.add('hidden'); }
+
+function videoCard(v) {
+  return `<a href="video.html?id=${v.id}" class="video-card">
+    <div class="card-thumb">
+      <img src="${v.cover_url}" loading="lazy" alt="${v.title}"
+           onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+      <div class="card-play"><div class="card-play-btn">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+        </svg></div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">${v.title}</div>
+      <div class="card-meta"><span>▶ ${v.views}</span><span>${v.created_at || ''}</span></div>
+    </div></a>`;
+}
+
+async function loadVideo() {
+  if (!videoId) { show('errorState'); document.getElementById('errorMsg').textContent = '无效的视频 ID'; return; }
+
+  try {
+    const v = await api.video(videoId);
+    hide('loadingState');
+    show('videoContent');
+
+    // 面包屑
+    document.getElementById('bcTitle').textContent = v.title;
+    if (v.category_name) {
+      document.getElementById('bcCategory').textContent = v.category_name;
+      document.getElementById('bcSep').classList.remove('hidden');
+    }
+
+    // 播放器
+    const wrap = document.getElementById('playerWrap');
+    if (v.video_type === 'upload' && v.video_file) {
+      wrap.innerHTML = `<video id="player" playsinline controls class="w-full">
+        <source src="http://localhost:8000${v.video_file}" type="video/mp4">
+      </video>`;
+    } else if (v.video_url && v.video_url.includes('youtube.com/embed')) {
+      wrap.innerHTML = `<div class="plyr__video-embed" id="player">
+        <iframe src="${v.video_url}?rel=0&modestbranding=1" allowfullscreen
+          allow="autoplay;fullscreen;picture-in-picture"></iframe>
+      </div>`;
+    } else if (v.video_url) {
+      wrap.innerHTML = `<video id="player" playsinline controls class="w-full">
+        <source src="${v.video_url}" type="video/mp4">
+      </video>`;
+    } else {
+      wrap.innerHTML = `<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;background:#111;color:var(--muted);">暂无播放源</div>`;
+    }
+
+    // Plyr 初始化
+    const playerEl = document.getElementById('player');
+    if (playerEl) {
+      new Plyr('#player', {
+        controls: ['play','progress','current-time','mute','volume','pip','fullscreen'],
+        youtube: { noCookie: true, rel: 0, modestbranding: 1 },
+      });
+    }
+
+    // 信息
+    document.getElementById('videoTitle').textContent = v.title;
+    document.getElementById('viewCount').textContent = `▶ ${v.views} 次播放`;
+    document.getElementById('videoDate').textContent  = v.created_at || '';
+    document.title = `${v.title} — VideoHub Pro`;
+
+    if (v.category_name) {
+      const badge = document.getElementById('categoryBadge');
+      badge.textContent = v.category_name;
+      badge.href = `index.html#cat-${v.category_id}`;
+      badge.classList.remove('hidden');
+    }
+    if (v.file_size_str) {
+      document.getElementById('fileSize').textContent = v.file_size_str;
+      show('fileSize');
+    }
+    if (v.description) {
+      document.getElementById('videoDesc').textContent = v.description;
+      show('videoDesc');
+    }
+
+    // 记录播放量
+    api.recordView(videoId).catch(() => {});
+
+    // 相关视频（同分类，取前 6 条）
+    if (v.category_id) {
+      try {
+        const rel = await api.videos({ category_id: v.category_id, page_size: 7 });
+        const others = (rel.items || []).filter(x => x.id !== videoId).slice(0, 6);
+        if (others.length) {
+          document.getElementById('relatedGrid').innerHTML = others.map(videoCard).join('');
+          show('relatedSection');
+        }
+      } catch { }
+    }
+
+  } catch (e) {
+    hide('loadingState');
+    show('errorState');
+    document.getElementById('errorMsg').textContent = `加载失败：${e.message}`;
+  }
+}
+
+async function loadSettings() {
+  try {
+    const s = await api.settings();
+    if (s.site_name) document.getElementById('siteName').textContent = s.site_name;
+  } catch { }
+}
+
+loadSettings();
+loadVideo();
+</script>
+</body>
+</html>

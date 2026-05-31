@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 — VideoHub Pro</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">
+        <svg width="26" height="26" fill="white" viewBox="0 0 20 20">
+          <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+        </svg>
+      </div>
+      <h1 style="font-size:1.25rem;font-weight:700;">管理后台</h1>
+      <p class="text-muted text-sm mt-1">请登录管理员账号</p>
+    </div>
+    <div id="loginError" class="hidden" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;border-radius:8px;padding:.625rem .875rem;font-size:.8125rem;margin-bottom:1rem;"></div>
+    <form id="loginForm" class="flex-col gap-3" style="display:flex;">
+      <div class="form-group">
+        <label class="form-label">用户名</label>
+        <input id="loginUser" class="input" type="text" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">密码</label>
+        <input id="loginPass" class="input" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button type="submit" id="loginBtn" class="btn btn-primary" style="width:100%;padding:.625rem;">登录</button>
+    </form>
+    <p class="text-xs text-muted mt-4 text-center">默认账号：admin / admin123</p>
+  </div>
+</div>
+
+<!-- 管理界面 -->
+<div id="adminLayout" class="admin-layout hidden">
+
+  <!-- 侧边栏 -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+      <div class="brand-icon" style="flex-shrink:0;">
+        <svg width="14" height="14" fill="white" viewBox="0 0 20 20">
+          <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+        </svg>
+      </div>
+      <span class="grad-text font-semibold" style="font-size:.875rem;">管理后台</span>
+    </div>
+    <nav class="sidebar-nav" style="display:flex;flex-direction:column;gap:.25rem;">
+      <a class="side-link active" data-panel="dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        <span>仪表盘</span>
+      </a>
+      <a class="side-link" data-panel="videos">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.361a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+        <span>视频管理</span>
+      </a>
+      <a class="side-link" data-panel="categories">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+        <span>分类管理</span>
+      </a>
+      <a class="side-link" data-panel="banners">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+        <span>Banner</span>
+      </a>
+      <a class="side-link" data-panel="settings">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>系统设置</span>
+      </a>
+    </nav>
+    <div style="padding:.5rem;border-top:1px solid var(--border);margin-top:auto;">
+      <a href="index.html" class="side-link" target="_blank">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <span>前台预览</span>
+      </a>
+      <button class="side-link" id="logoutBtn" style="width:100%;color:#ef4444;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <span>退出</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 主区 -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <button id="sidebarToggle" class="btn-icon">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span id="topbarTitle" style="font-size:.875rem;font-weight:600;">仪表盘</span>
+      <span id="topbarUser" class="text-muted text-sm" style="margin-left:auto;"></span>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- 仪表盘 -->
+      <section id="panel-dashboard" class="admin-panel active">
+        <div id="statsGrid" class="stat-grid">
+          <div class="stat-card"><div class="stat-value grad-text" id="statVideos">-</div><div class="stat-label">视频总数</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#3b82f6;" id="statCats">-</div><div class="stat-label">分类数</div></div>
+          <div class="stat-card"><div class="stat-value" style="color:#10b981;" id="statBanners">-</div><div class="stat-label">Banner（启用）</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header"><span style="font-weight:600;font-size:.875rem;">最近上传</span><a href="#" onclick="switchPanel('videos');return false;" class="text-xs text-primary">查看全部 →</a></div>
+          <table><thead><tr><th>视频</th><th>来源</th><th>分类</th><th>时间</th></tr></thead>
+          <tbody id="recentVideos"></tbody></table>
+        </div>
+      </section>
+
+      <!-- 视频管理 -->
+      <section id="panel-videos" class="admin-panel">
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="openVideoModal()">+ 添加视频</button>
+          <button class="btn btn-outline" onclick="openBatchModal()">批量上传</button>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header">
+            <span id="videoCount" class="text-muted text-sm"></span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table><thead><tr>
+              <th>视频</th><th>来源</th><th>分类</th><th>时间</th><th style="text-align:right;">操作</th>
+            </tr></thead>
+            <tbody id="videoTableBody"></tbody></table>
+          </div>
+        </div>
+        <div id="videoPagination" class="pagination"></div>
+      </section>
+
+      <!-- 分类管理 -->
+      <section id="panel-categories" class="admin-panel">
+        <div class="table-wrap" style="max-width:500px;">
+          <div class="table-header" style="gap:.5rem;">
+            <input id="newCatName" class="input" style="max-width:240px;" placeholder="新分类名称">
+            <button class="btn btn-primary btn-sm" onclick="addCategory()">添加</button>
+          </div>
+          <table><thead><tr><th>分类名称</th><th>Slug</th><th>视频数</th><th style="text-align:right;">操作</th></tr></thead>
+          <tbody id="catTableBody"></tbody></table>
+        </div>
+      </section>
+
+      <!-- Banner 管理 -->
+      <section id="panel-banners" class="admin-panel">
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+          <button class="btn btn-primary" onclick="openBannerModal()">+ 新增 Banner</button>
+          <select id="bannerFilter" class="input" style="max-width:140px;" onchange="loadBanners()">
+            <option value="">全部</option>
+            <option value="top">顶部</option>
+            <option value="left">左侧</option>
+            <option value="right">右侧</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <div style="overflow-x:auto;">
+            <table><thead><tr>
+              <th>预览</th><th>标题</th><th>位置</th><th>排序</th><th>状态</th><th style="text-align:right;">操作</th>
+            </tr></thead>
+            <tbody id="bannerTableBody"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 系统设置 -->
+      <section id="panel-settings" class="admin-panel">
+        <div style="max-width:480px;">
+          <div id="settingsSaved" class="hidden" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;border-radius:8px;padding:.625rem .875rem;font-size:.8125rem;margin-bottom:1rem;">设置已保存</div>
+          <div class="table-wrap">
+            <div class="table-header"><span style="font-weight:600;font-size:.875rem;">网站配置</span></div>
+            <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
+              <div class="form-group"><label class="form-label">网站名称</label><input id="setName" class="input" placeholder="VideoHub Pro"></div>
+              <div class="form-group"><label class="form-label">网站描述</label><textarea id="setDesc" class="input" rows="2" style="resize:none;"></textarea></div>
+              <div class="form-group"><label class="form-label">SEO 关键词</label><input id="setKeys" class="input" placeholder="视频,博客"></div>
+              <div class="form-group"><label class="form-label">底部版权</label><input id="setFooter" class="input" placeholder="© 2024 VideoHub Pro."></div>
+              <button class="btn btn-primary" onclick="saveSettings()" style="align-self:flex-start;">保存设置</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- 添加/编辑视频 模态框 -->
+<div id="videoModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="videoModalTitle">添加视频</h3>
+      <button class="btn-icon" onclick="closeModal('videoModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editVideoId">
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+        <button type="button" id="btnUrlMode"   class="btn btn-primary btn-sm" onclick="setVtype('url')">🔗 URL</button>
+        <button type="button" id="btnFileMode"  class="btn btn-outline btn-sm" onclick="setVtype('upload')">📁 上传文件</button>
+      </div>
+      <div class="form-group"><label class="form-label">标题</label><input id="vTitle" class="input" placeholder="视频标题"></div>
+      <div id="urlGroup" class="form-group">
+        <label class="form-label">视频地址 <span class="text-muted text-xs">（YouTube embed 或 mp4 直链）</span></label>
+        <input id="vUrl" class="input" placeholder="https://www.youtube.com/embed/...">
+      </div>
+      <div id="fileGroup" class="form-group hidden">
+        <label class="form-label">视频文件 <span class="text-muted text-xs">（mp4/avi/mov/mkv/webm，最大 2GB）</span></label>
+        <input id="vFile" class="input" type="file" accept=".mp4,.avi,.mov,.mkv,.webm,.m4v">
+      </div>
+      <div class="form-group"><label class="form-label">封面图地址 <span class="text-muted text-xs">（留空则自动提取）</span></label><input id="vCover" class="input" placeholder="https://..."></div>
+      <div class="form-group"><label class="form-label">分类</label>
+        <select id="vCat" class="input"><option value="">— 无分类 —</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">描述</label><textarea id="vDesc" class="input" rows="2" style="resize:none;"></textarea></div>
+      <div id="uploadHint" class="hidden text-xs" style="background:rgba(99,102,241,.1);color:var(--primary);padding:.5rem .75rem;border-radius:6px;">
+        ⏳ 正在上传，大文件需要较长时间，请勿关闭...
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('videoModal')">取消</button>
+      <button id="videoSaveBtn" class="btn btn-primary" onclick="saveVideo()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 批量上传 模态框 -->
+<div id="batchModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head"><h3>批量上传视频</h3><button class="btn-icon" onclick="closeModal('batchModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">选择多个视频文件（Ctrl/Cmd 多选）</label>
+        <input id="batchFiles" class="input" type="file" multiple accept=".mp4,.avi,.mov,.mkv,.webm,.m4v"></div>
+      <div class="form-group"><label class="form-label">标题前缀（可选）</label><input id="batchPrefix" class="input" placeholder="如：教程"></div>
+      <div class="form-group"><label class="form-label">统一分类</label>
+        <select id="batchCat" class="input"><option value="">— 无分类 —</option></select></div>
+      <div id="batchHint" class="hidden text-xs" style="background:rgba(99,102,241,.1);color:var(--primary);padding:.5rem .75rem;border-radius:6px;">⏳ 批量上传中，请耐心等待...</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('batchModal')">取消</button>
+      <button id="batchSaveBtn" class="btn btn-primary" onclick="batchUpload()">开始上传</button>
+    </div>
+  </div>
+</div>
+
+<!-- Banner 模态框 -->
+<div id="bannerModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head"><h3 id="bannerModalTitle">新增 Banner</h3><button class="btn-icon" onclick="closeModal('bannerModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editBannerId">
+      <div class="form-group"><label class="form-label">位置 *</label>
+        <select id="bPos" class="input"><option value="top">顶部全宽</option><option value="left">左侧</option><option value="right">右侧</option></select></div>
+      <div class="form-group"><label class="form-label">标题</label><input id="bTitle" class="input" placeholder="广告标题"></div>
+      <div class="form-group"><label class="form-label">图片地址 *</label><input id="bImg" class="input" placeholder="https://..."></div>
+      <div class="form-group"><label class="form-label">跳转链接</label><input id="bLink" class="input" placeholder="https://..."></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div class="form-group"><label class="form-label">排序值</label><input id="bSort" class="input" type="number" value="0"></div>
+        <div class="form-group"><label class="form-label">轮播间隔 (ms)</label><input id="bDur" class="input" type="number" value="3000" min="500" step="500"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('bannerModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveBanner()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module">
+import { api, isLoggedIn, clearToken } from './js/api.js';
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+window.toast = function(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.getElementById('toastStack').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+};
+
+// ── 模态框 ────────────────────────────────────────────────────────────────
+window.closeModal = (id) => document.getElementById(id).classList.remove('open');
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+
+// ── 面板切换 ──────────────────────────────────────────────────────────────
+const panelNames = { dashboard:'仪表盘', videos:'视频管理', categories:'分类管理', banners:'Banner', settings:'系统设置' };
+window.switchPanel = function(name) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.side-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  document.querySelector(`[data-panel="${name}"]`).classList.add('active');
+  document.getElementById('topbarTitle').textContent = panelNames[name] || name;
+  if (name === 'dashboard')   loadDashboard();
+  if (name === 'videos')      loadVideoTable(1);
+  if (name === 'categories')  loadCategories();
+  if (name === 'banners')     loadBanners();
+  if (name === 'settings')    loadSettings();
+};
+document.querySelectorAll('.side-link[data-panel]').forEach(l =>
+  l.addEventListener('click', () => switchPanel(l.dataset.panel))
+);
+document.getElementById('sidebarToggle').onclick = () =>
+  document.getElementById('adminSidebar').classList.toggle('collapsed');
+
+// ── 登录 ─────────────────────────────────────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = '登录中...'; btn.disabled = true;
+  try {
+    await api.auth.login(
+      document.getElementById('loginUser').value,
+      document.getElementById('loginPass').value,
+    );
+    const me = await api.auth.me();
+    document.getElementById('topbarUser').textContent = me.username;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminLayout').classList.remove('hidden');
+    loadDashboard();
+  } catch (err) {
+    document.getElementById('loginError').textContent = `登录失败：${err.message}`;
+    document.getElementById('loginError').classList.remove('hidden');
+  } finally { btn.textContent = '登录'; btn.disabled = false; }
+});
+
+document.getElementById('logoutBtn').onclick = () => {
+  api.auth.logout();
+  document.getElementById('adminLayout').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+};
+
+// ── 自动检查登录态 ────────────────────────────────────────────────────────
+async function checkAuth() {
+  if (!isLoggedIn()) return;
+  try {
+    const me = await api.auth.me();
+    document.getElementById('topbarUser').textContent = me.username;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminLayout').classList.remove('hidden');
+    loadDashboard();
+  } catch { clearToken(); }
+}
+checkAuth();
+
+// ── 仪表盘 ────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const s = await api.admin.stats();
+    document.getElementById('statVideos').textContent  = s.videos;
+    document.getElementById('statCats').textContent    = s.categories;
+    document.getElementById('statBanners').textContent = s.banners;
+    const tbody = document.getElementById('recentVideos');
+    tbody.innerHTML = (s.recent || []).map(v => `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:.625rem;">
+          <img src="${v.cover_url}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+          <a href="http://localhost:8000/../blog-video-frontend/video.html?id=${v.id}" target="_blank"
+             style="font-weight:500;color:var(--text);font-size:.8125rem;">${v.title}</a>
+        </div></td>
+        <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${v.video_type==='upload'?'本地':'URL'}</span></td>
+        <td class="text-muted text-xs">${v.category_name || '—'}</td>
+        <td class="text-muted text-xs">${v.created_at || ''}</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">暂无视频</td></tr>';
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── 视频管理 ──────────────────────────────────────────────────────────────
+let videoPage = 1, allCategories = [];
+
+async function loadVideoTable(page = 1) {
+  videoPage = page;
+  try {
+    const data = await api.admin.videos({ page, page_size: 15 });
+    allCategories = data.categories || [];
+    document.getElementById('videoCount').textContent = `共 ${data.total} 个视频`;
+    const tbody = document.getElementById('videoTableBody');
+    tbody.innerHTML = (data.items || []).map(v => `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:.625rem;">
+          <img src="${v.cover_url}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+          <div style="min-width:0;">
+            <div style="font-size:.8125rem;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">${v.title}</div>
+            <div class="text-muted text-xs">▶ ${v.views}</div>
+          </div>
+        </div></td>
+        <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${v.video_type==='upload'?`本地 ${v.file_size_str||''}`:' URL'}</span></td>
+        <td class="text-muted text-xs">${v.category_name||'—'}</td>
+        <td class="text-muted text-xs">${v.created_at||''}</td>
+        <td style="text-align:right;">
+          <div style="display:flex;justify-content:flex-end;gap:.25rem;">
+            <button class="btn btn-outline btn-sm" onclick='openVideoModal(${JSON.stringify(v)})'>编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteVideo(${v.id},'${v.title.replace(/'/g,"\\'")}')">删除</button>
+          </div>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:2rem;">暂无视频</td></tr>';
+
+    // 分页
+    const pages = data.pages || 1;
+    let pg = '';
+    if (page > 1)   pg += `<button class="page-btn" onclick="loadVideoTable(${page-1})">上一页</button>`;
+    pg += `<span class="text-muted text-sm" style="padding:.35rem .5rem;">${page}/${pages}</span>`;
+    if (page < pages) pg += `<button class="page-btn" onclick="loadVideoTable(${page+1})">下一页</button>`;
+    document.getElementById('videoPagination').innerHTML = pg;
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// 视频类型切换
+let currentVtype = 'url';
+window.setVtype = function(t) {
+  currentVtype = t;
+  document.getElementById('urlGroup').classList.toggle('hidden', t !== 'url');
+  document.getElementById('fileGroup').classList.toggle('hidden', t !== 'upload');
+  document.getElementById('btnUrlMode').className  = `btn btn-sm ${t==='url'  ?'btn-primary':'btn-outline'}`;
+  document.getElementById('btnFileMode').className = `btn btn-sm ${t==='upload'?'btn-primary':'btn-outline'}`;
+};
+
+window.openVideoModal = function(v = null) {
+  document.getElementById('videoModalTitle').textContent = v ? '编辑视频' : '添加视频';
+  document.getElementById('editVideoId').value = v?.id || '';
+  document.getElementById('vTitle').value = v?.title || '';
+  document.getElementById('vUrl').value   = v?.video_url || '';
+  document.getElementById('vCover').value = v?.cover_url && !v.cover_url.includes('picsum') ? v.cover_url : '';
+  document.getElementById('vDesc').value  = v?.description || '';
+  document.getElementById('vFile').value  = '';
+
+  // 填充分类
+  const sel = document.getElementById('vCat');
+  sel.innerHTML = '<option value="">— 无分类 —</option>';
+  allCategories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.name;
+    if (v?.category_id === c.id) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  setVtype(v?.video_type || 'url');
+  openModal('videoModal');
+};
+
+window.saveVideo = async function() {
+  const id = document.getElementById('editVideoId').value;
+  const btn = document.getElementById('videoSaveBtn');
+  const hint = document.getElementById('uploadHint');
+  btn.disabled = true; btn.textContent = '保存中...';
+  if (currentVtype === 'upload') hint.classList.remove('hidden');
+
+  const fd = new FormData();
+  fd.append('video_type', currentVtype);
+  fd.append('title',       document.getElementById('vTitle').value);
+  fd.append('video_url',   document.getElementById('vUrl').value);
+  fd.append('cover_url',   document.getElementById('vCover').value);
+  fd.append('description', document.getElementById('vDesc').value);
+  fd.append('category_id', document.getElementById('vCat').value);
+  const file = document.getElementById('vFile').files[0];
+  if (file) fd.append('video_file', file);
+
+  try {
+    if (id) {
+      await api.admin.editVideo(id, fd);
+    } else {
+      await api.admin.addVideo(fd);
+    }
+    closeModal('videoModal');
+    loadVideoTable(videoPage);
+    toast(id ? '视频已更新' : '视频已添加', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '保存'; hint.classList.add('hidden'); }
+};
+
+window.deleteVideo = async function(id, title) {
+  if (!confirm(`确认删除「${title}」？`)) return;
+  try {
+    await api.admin.deleteVideo(id);
+    loadVideoTable(videoPage);
+    toast('已删除', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+};
+
+window.openBatchModal = function() {
+  const sel = document.getElementById('batchCat');
+  sel.innerHTML = '<option value="">— 无分类 —</option>';
+  allCategories.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; sel.appendChild(o); });
+  document.getElementById('batchFiles').value = '';
+  document.getElementById('batchPrefix').value = '';
+  openModal('batchModal');
+};
+
+window.batchUpload = async function() {
+  const files = document.getElementById('batchFiles').files;
+  if (!files.length) { toast('请选择文件', 'error'); return; }
+  const btn = document.getElementById('batchSaveBtn');
+  btn.disabled = true; btn.textContent = '上传中...';
+  document.getElementById('batchHint').classList.remove('hidden');
+  const fd = new FormData();
+  for (const f of files) fd.append('video_files', f);
+  fd.append('title_prefix', document.getElementById('batchPrefix').value);
+  fd.append('category_id',  document.getElementById('batchCat').value);
+  try {
+    const res = await api.admin.batchUpload(fd);
+    closeModal('batchModal');
+    loadVideoTable(1);
+    toast(`成功上传 ${res.count} 个视频`, 'success');
+  } catch(e) { toast(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '开始上传'; document.getElementById('batchHint').classList.add('hidden'); }
+};
+
+// ── 分类管理 ──────────────────────────────────────────────────────────────
+async function loadCategories() {
+  try {
+    const cats = await api.categories();
+    const tbody = document.getElementById('catTableBody');
+    tbody.innerHTML = cats.map(c => `
+      <tr>
+        <td style="font-weight:500;">${c.name}</td>
+        <td class="text-muted text-xs">/${c.slug}</td>
+        <td class="text-muted">${c.video_count||0}</td>
+        <td style="text-align:right;"><button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id},'${c.name.replace(/'/g,"\\'")}')">删除</button></td>
+      </tr>`).join('') || '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">暂无分类</td></tr>';
+  } catch(e) { toast(e.message,'error'); }
+}
+
+window.addCategory = async function() {
+  const name = document.getElementById('newCatName').value.trim();
+  if (!name) { toast('请输入分类名称','error'); return; }
+  try {
+    await api.admin.addCategory(name);
+    document.getElementById('newCatName').value = '';
+    loadCategories();
+    toast('分类已添加','success');
+  } catch(e) { toast(e.message,'error'); }
+};
+
+window.deleteCategory = async function(id, name) {
+  if (!confirm(`删除「${name}」？该分类下的视频将变为无分类。`)) return;
+  try { await api.admin.deleteCategory(id); loadCategories(); toast('已删除','success'); }
+  catch(e) { toast(e.message,'error'); }
+};
+
+// ── Banner 管理 ────────────────────────────────────────────────────────────
+async function loadBanners() {
+  const pos = document.getElementById('bannerFilter').value;
+  try {
+    const list = await api.admin.banners(pos);
+    const tbody = document.getElementById('bannerTableBody');
+    tbody.innerHTML = list.map(b => `
+      <tr>
+        <td>${b.image_url ? `<img src="${b.image_url}" style="width:80px;height:50px;object-fit:cover;border-radius:6px;">` : '—'}</td>
+        <td style="font-size:.8125rem;">${b.title||'（无标题）'}</td>
+        <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;background:rgba(99,102,241,.15);color:#818cf8;">${b.position}</span></td>
+        <td class="text-muted text-xs">${b.sort_order} · ${b.duration}ms</td>
+        <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;${b.is_active?'background:rgba(16,185,129,.15);color:#10b981;':'background:rgba(156,163,175,.1);color:#9ca3af;'}">${b.is_active?'启用':'停用'}</span></td>
+        <td style="text-align:right;">
+          <div style="display:flex;justify-content:flex-end;gap:.25rem;">
+            <button class="btn btn-outline btn-sm" onclick="toggleBanner(${b.id})">${b.is_active?'停用':'启用'}</button>
+            <button class="btn btn-outline btn-sm" onclick='openBannerModal(${JSON.stringify(b)})'>编辑</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteBanner(${b.id})">删除</button>
+          </div>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" class="text-muted" style="text-align:center;padding:2rem;">暂无 Banner</td></tr>';
+  } catch(e) { toast(e.message,'error'); }
+}
+
+window.openBannerModal = function(b = null) {
+  document.getElementById('bannerModalTitle').textContent = b ? '编辑 Banner' : '新增 Banner';
+  document.getElementById('editBannerId').value = b?.id || '';
+  document.getElementById('bPos').value   = b?.position   || 'top';
+  document.getElementById('bTitle').value = b?.title      || '';
+  document.getElementById('bImg').value   = b?.image_url  || '';
+  document.getElementById('bLink').value  = b?.link_url   || '';
+  document.getElementById('bSort').value  = b?.sort_order ?? 0;
+  document.getElementById('bDur').value   = b?.duration   ?? 3000;
+  openModal('bannerModal');
+};
+
+window.saveBanner = async function() {
+  const id = document.getElementById('editBannerId').value;
+  const data = {
+    position:   document.getElementById('bPos').value,
+    title:      document.getElementById('bTitle').value || null,
+    image_url:  document.getElementById('bImg').value || null,
+    link_url:   document.getElementById('bLink').value || null,
+    sort_order: parseInt(document.getElementById('bSort').value) || 0,
+    duration:   parseInt(document.getElementById('bDur').value)  || 3000,
+  };
+  try {
+    id ? await api.admin.editBanner(id, data) : await api.admin.addBanner(data);
+    closeModal('bannerModal');
+    loadBanners();
+    toast(id ? 'Banner 已更新' : 'Banner 已添加', 'success');
+  } catch(e) { toast(e.message,'error'); }
+};
+
+window.toggleBanner = async function(id) {
+  try { await api.admin.toggleBanner(id); loadBanners(); } catch(e) { toast(e.message,'error'); }
+};
+window.deleteBanner = async function(id) {
+  if (!confirm('确认删除？')) return;
+  try { await api.admin.deleteBanner(id); loadBanners(); toast('已删除','success'); } catch(e) { toast(e.message,'error'); }
+};
+
+// ── 系统设置 ──────────────────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const s = await api.admin.getSettings();
+    document.getElementById('setName').value   = s.site_name        || '';
+    document.getElementById('setDesc').value   = s.site_description || '';
+    document.getElementById('setKeys').value   = s.site_keywords    || '';
+    document.getElementById('setFooter').value = s.footer_text      || '';
+  } catch { }
+}
+
+window.saveSettings = async function() {
+  try {
+    await api.admin.saveSettings({
+      site_name:        document.getElementById('setName').value,
+      site_description: document.getElementById('setDesc').value,
+      site_keywords:    document.getElementById('setKeys').value,
+      footer_text:      document.getElementById('setFooter').value,
+    });
+    document.getElementById('settingsSaved').classList.remove('hidden');
+    setTimeout(() => document.getElementById('settingsSaved').classList.add('hidden'), 3000);
+  } catch(e) { toast(e.message,'error'); }
+};
+</script>
+</body>
+</html>
