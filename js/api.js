@@ -98,6 +98,14 @@ export const api = {
   categories() {
     return req('/api/categories');
   },
+  /** 获取所有国家（二级菜单一级） */
+  countries() {
+    return req('/api/countries');
+  },
+  /** 获取所有视频类型（二级菜单二级） */
+  types() {
+    return req('/api/types');
+  },
   /** 获取各位置 Banner */
   banners() {
     return req('/api/public/banners');
@@ -160,6 +168,22 @@ export const api = {
     /** 删除分类 */
     deleteCategory(id) {
       return authReq(`/api/admin/categories/${id}`, { method: 'DELETE' });
+    },
+
+    // -- 国家 --
+    addCountry(name, sort_order = 0) {
+      return authReq('/api/admin/countries', { method: 'POST', body: { name, sort_order } });
+    },
+    deleteCountry(id) {
+      return authReq(`/api/admin/countries/${id}`, { method: 'DELETE' });
+    },
+
+    // -- 视频类型 --
+    addType(name, sort_order = 0) {
+      return authReq('/api/admin/types', { method: 'POST', body: { name, sort_order } });
+    },
+    deleteType(id) {
+      return authReq(`/api/admin/types/${id}`, { method: 'DELETE' });
     },
 
     // -- Banner --

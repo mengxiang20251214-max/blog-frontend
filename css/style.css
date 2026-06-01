@@ -168,6 +168,24 @@ select.input { cursor: pointer; }
 .chip:hover { border-color: var(--primary); color: var(--primary); }
 .chip.active { background: var(--grad); border-color: transparent; color: #fff; }
 
+/* ── 二级菜单（国家 / 类型） ─────────────────────────────────────────────── */
+.submenu-row { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .5rem; }
+.submenu-row .filter-row { margin-bottom: .25rem; flex: 1; }
+.submenu-label {
+  flex-shrink: 0; font-size: .75rem; font-weight: 600; color: var(--muted);
+  padding: .35rem .5rem .35rem 0; min-width: 3rem; letter-spacing: .03em;
+}
+
+/* ── 语言切换 ───────────────────────────────────────────────────────────── */
+.lang-switch { display: inline-flex; gap: .25rem; align-items: center; }
+.lang-btn {
+  padding: .25rem .6rem; border-radius: 999px; font-size: .75rem;
+  border: 1px solid var(--border); color: var(--muted); background: transparent;
+  transition: all .15s; white-space: nowrap;
+}
+.lang-btn:hover { border-color: var(--primary); color: var(--primary); }
+.lang-btn.active { background: var(--grad); border-color: transparent; color: #fff; }
+
 /* ── 视频网格 ────────────────────────────────────────────────────────────── */
 .video-grid {
   display: grid;
