@@ -3,7 +3,7 @@
  * 统一管理所有后端接口调用和 JWT Token
  */
 
-const API_BASE = 'http://localhost:8000';
+export const API_BASE = 'https://my-project-production-ef6d.up.railway.app';
 const TOKEN_KEY = 'vh_token';
 
 // ── Token 管理 ────────────────────────────────────────────────────────────

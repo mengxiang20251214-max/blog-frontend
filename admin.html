@@ -353,7 +353,7 @@ async function loadDashboard() {
       <tr>
         <td><div style="display:flex;align-items:center;gap:.625rem;">
           <img src="${v.cover_url}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
-          <a href="http://localhost:8000/../blog-video-frontend/video.html?id=${v.id}" target="_blank"
+          <a href="video.html?id=${v.id}" target="_blank"
              style="font-weight:500;color:var(--text);font-size:.8125rem;">${v.title}</a>
         </div></td>
         <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${v.video_type==='upload'?'本地':'URL'}</span></td>
