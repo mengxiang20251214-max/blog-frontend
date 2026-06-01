@@ -56,17 +56,6 @@
 
   <!-- 主内容 -->
   <main class="page-main">
-    <!-- 二级菜单：国家（主） -->
-    <div class="submenu-row">
-      <span class="submenu-label" data-i18n="menu_country">国家</span>
-      <div id="countryBar" class="filter-row"></div>
-    </div>
-    <!-- 二级菜单：类型（子） -->
-    <div class="submenu-row">
-      <span class="submenu-label" data-i18n="menu_type">类型</span>
-      <div id="typeBar" class="filter-row"></div>
-    </div>
-
     <!-- 标题行 -->
     <div class="flex items-center justify-between" style="margin-bottom:.75rem;">
       <h2 id="sectionTitle" style="font-size:.9375rem; font-weight:600;">最新视频</h2>
@@ -100,9 +89,10 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
 import { api, isLoggedIn } from './js/api.js';
-import { applyI18n, renderSubmenu, t } from './js/main.js';
+import { applyI18n, setRuntimeLang, t } from './js/main.js';
 
-// 界面文案跟随浏览器语言
+// 前台首页固定使用印尼语（Bahasa Indonesia），无语言切换按钮
+setRuntimeLang('id');
 applyI18n();
 
 // 「管理」入口仅对已登录管理员显示；匿名访客直接浏览，无需任何登录
@@ -112,7 +102,7 @@ if (isLoggedIn()) {
 }
 
 // ── 状态 ──────────────────────────────────────────────────────────────────
-let state = { page: 1, countryId: '', typeId: '', sort: 'created_at', q: '', totalPages: 1 };
+let state = { page: 1, sort: 'created_at', q: '', totalPages: 1 };
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 function toast(msg, type = 'info') {
@@ -154,8 +144,6 @@ async function loadVideos() {
 
   try {
     const params = { page: state.page, page_size: 12, sort: state.sort };
-    if (state.countryId) params.country_id = state.countryId;
-    if (state.typeId)    params.type_id    = state.typeId;
 
     let data;
     if (state.q.trim()) {
@@ -197,24 +185,6 @@ function renderPagination() {
   el.innerHTML = html;
 }
 window.goPage = (p) => { state.page = p; loadVideos(); window.scrollTo(0, 0); };
-
-// ── 二级菜单（国家 → 类型） ─────────────────────────────────────────────────
-async function loadMenus() {
-  try {
-    const [countries, types] = await Promise.all([api.countries(), api.types()]);
-    renderSubmenu({
-      countryBar: document.getElementById('countryBar'),
-      typeBar:    document.getElementById('typeBar'),
-      countries, types,
-      onChange: (countryId, typeId) => {
-        state.countryId = countryId;
-        state.typeId    = typeId;
-        state.page      = 1;
-        loadVideos();
-      },
-    });
-  } catch { }
-}
 
 // ── Banner ────────────────────────────────────────────────────────────────
 async function loadBanners() {
@@ -280,7 +250,6 @@ async function loadSettings() {
 // ── 初始化 ────────────────────────────────────────────────────────────────
 loadSettings();
 loadBanners();
-loadMenus();
 loadVideos();
 </script>
 </body>

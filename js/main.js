@@ -9,9 +9,15 @@
  */
 
 // ── i18n 字典 ──────────────────────────────────────────────────────────────
+// 后台语言切换器支持：中 / 英 / 泰
 export const SUPPORTED_LANGS = ['zh', 'en', 'th'];
 export const LANG_LABELS = { zh: '中文', en: 'English', th: 'ไทย' };
 const LANG_KEY = 'vh_lang';
+const DEFAULT_LANG = 'en';        // 后台默认英语（前台首页用 setRuntimeLang('id') 强制印尼语）
+
+// 运行时语言覆盖（不写 localStorage）：供首页强制印尼语，避免污染后台语言偏好
+let _runtimeLang = null;
+export function setRuntimeLang(lang) { _runtimeLang = lang; }
 
 const I18N = {
   zh: {
@@ -96,20 +102,48 @@ const I18N = {
     th_slug: 'Slug', th_count: 'วิดีโอ',
     saved: 'บันทึกแล้ว', lang_label: 'ภาษา',
   },
+  id: {
+    nav_home: 'Beranda', nav_admin: 'Admin',
+    search_ph: 'Cari video...',
+    menu_country: 'Negara', menu_type: 'Jenis', all: 'Semua',
+    latest: 'Video Terbaru', unit_videos: 'video',
+    empty: 'Belum ada video', load_failed: 'Gagal memuat',
+    prev: 'Sebelumnya', next: 'Berikutnya', search_prefix: 'Cari',
+    back_home: '← Kembali', related: 'Terkait',
+    views_unit: 'tayangan', no_source: 'Tidak ada sumber video',
+    admin_title: 'Panel Admin', login_sub: 'Masuk sebagai administrator',
+    username: 'Nama pengguna', password: 'Kata sandi', login_btn: 'Masuk',
+    login_ing: 'Sedang masuk...', login_fail: 'Gagal masuk',
+    default_account: 'Default: admin / admin123',
+    nav_dashboard: 'Dasbor', nav_videos: 'Video', nav_categories: 'Kategori',
+    nav_banners: 'Banner', nav_settings: 'Pengaturan',
+    nav_preview: 'Pratinjau', nav_logout: 'Keluar',
+    btn_add_video: '+ Tambah Video', btn_batch: 'Unggah Massal',
+    btn_add_banner: '+ Tambah Banner', btn_save: 'Simpan', btn_cancel: 'Batal',
+    btn_add: 'Tambah', btn_delete: 'Hapus', btn_edit: 'Ubah',
+    stat_videos: 'Total Video', stat_cats: 'Kategori', stat_banners: 'Banner (aktif)',
+    recent_uploads: 'Unggahan Terbaru', view_all: 'Lihat semua →',
+    th_video: 'Video', th_source: 'Sumber', th_category: 'Kategori', th_country: 'Negara',
+    th_type: 'Jenis', th_time: 'Tanggal', th_actions: 'Aksi', th_preview: 'Pratinjau',
+    th_title: 'Judul', th_position: 'Posisi', th_sort: 'Urutan', th_status: 'Status',
+    th_slug: 'Slug', th_count: 'Video',
+    saved: 'Pengaturan disimpan', lang_label: 'Bahasa',
+  },
 };
 
-/** 检测当前语言：localStorage 优先，其次浏览器 Accept-Language，默认中文 */
+/** 后台语言：localStorage 优先，其次浏览器 Accept-Language，默认英语 */
 export function detectLang() {
   const saved = localStorage.getItem(LANG_KEY);
   if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
-  const nav = (navigator.language || navigator.userLanguage || 'zh').toLowerCase();
+  const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
   if (nav.startsWith('zh')) return 'zh';
   if (nav.startsWith('th')) return 'th';
   if (nav.startsWith('en')) return 'en';
-  return 'zh';
+  return DEFAULT_LANG;
 }
 
-export function getLang() { return detectLang(); }
+/** 当前生效语言：运行时覆盖（如首页印尼语）优先，否则 detectLang */
+export function getLang() { return _runtimeLang || detectLang(); }
 
 /** 设置语言并持久化（不自动刷新，由调用方决定重渲染） */
 export function setLang(lang) {
@@ -140,45 +174,6 @@ export function applyI18n(root = document) {
   root.querySelectorAll('[data-i18n-title]').forEach(el => {
     el.title = t(el.dataset.i18nTitle);
   });
-}
-
-// ── 二级菜单渲染（国家主菜单 + 类型子菜单） ──────────────────────────────────
-/**
- * 渲染二级菜单到容器。
- * @param {object} opts
- *   countryBar  {HTMLElement} 国家主菜单容器
- *   typeBar     {HTMLElement} 类型子菜单容器
- *   countries   {Array}       [{id,name,...}]
- *   types       {Array}       [{id,name,...}]
- *   onChange    {Function}    (countryId, typeId) => void  选择变化回调
- */
-export function renderSubmenu({ countryBar, typeBar, countries, types, onChange }) {
-  const state = { country: '', type: '' };
-
-  function chip(label, value, active) {
-    const b = document.createElement('button');
-    b.className = 'chip' + (active ? ' active' : '');
-    b.textContent = label;
-    b.dataset.val = value;
-    return b;
-  }
-
-  function build(bar, items, key) {
-    bar.innerHTML = '';
-    bar.appendChild(chip(t('all'), '', state[key] === ''));
-    items.forEach(it => bar.appendChild(chip(it.name, String(it.id), false)));
-    bar.addEventListener('click', e => {
-      const btn = e.target.closest('[data-val]');
-      if (!btn) return;
-      bar.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      state[key] = btn.dataset.val;
-      onChange(state.country, state.type);
-    });
-  }
-
-  if (countryBar) build(countryBar, countries || [], 'country');
-  if (typeBar)    build(typeBar, types || [], 'type');
 }
 
 // ── 通用工具 ────────────────────────────────────────────────────────────────

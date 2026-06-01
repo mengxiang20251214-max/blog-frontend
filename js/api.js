@@ -98,14 +98,6 @@ export const api = {
   categories() {
     return req('/api/categories');
   },
-  /** 获取所有国家（二级菜单一级） */
-  countries() {
-    return req('/api/countries');
-  },
-  /** 获取所有视频类型（二级菜单二级） */
-  types() {
-    return req('/api/types');
-  },
   /** 获取各位置 Banner */
   banners() {
     return req('/api/public/banners');
@@ -170,34 +162,18 @@ export const api = {
       return authReq(`/api/admin/categories/${id}`, { method: 'DELETE' });
     },
 
-    // -- 国家 --
-    addCountry(name, sort_order = 0) {
-      return authReq('/api/admin/countries', { method: 'POST', body: { name, sort_order } });
-    },
-    deleteCountry(id) {
-      return authReq(`/api/admin/countries/${id}`, { method: 'DELETE' });
-    },
-
-    // -- 视频类型 --
-    addType(name, sort_order = 0) {
-      return authReq('/api/admin/types', { method: 'POST', body: { name, sort_order } });
-    },
-    deleteType(id) {
-      return authReq(`/api/admin/types/${id}`, { method: 'DELETE' });
-    },
-
-    // -- Banner --
+    // -- Banner（multipart/form-data，支持上传 图片/GIF/视频 文件） --
     /** 获取 Banner 列表 */
     banners(pos = '') {
       return authReq('/api/admin/banners' + (pos ? `?pos=${pos}` : ''));
     },
-    /** 新增 Banner */
-    addBanner(data) {
-      return authReq('/api/admin/banners', { method: 'POST', body: data });
+    /** 新增 Banner（formData：position/title/image_url/link_url/media_type/sort_order/duration/media_file） */
+    addBanner(formData) {
+      return authReq('/api/admin/banners', { method: 'POST', body: formData });
     },
-    /** 编辑 Banner */
-    editBanner(id, data) {
-      return authReq(`/api/admin/banners/${id}`, { method: 'PUT', body: data });
+    /** 编辑 Banner（formData 同上） */
+    editBanner(id, formData) {
+      return authReq(`/api/admin/banners/${id}/edit`, { method: 'POST', body: formData });
     },
     /** 切换 Banner 启用状态 */
     toggleBanner(id) {
