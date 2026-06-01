@@ -76,8 +76,8 @@
 <div class="toast-stack" id="toastStack"></div>
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script type="module">
-import { api, API_BASE } from './js/api.js';
-import { applyI18n, setRuntimeLang, t, esc, safeUrl } from './js/main.js';
+import { api, mediaUrl } from './js/api.js';
+import { applyI18n, setRuntimeLang, t, esc } from './js/main.js';
 
 // 前台视频详情页与首页一致，固定印尼语
 setRuntimeLang('id');
@@ -90,7 +90,7 @@ function show(id)  { document.getElementById(id).classList.remove('hidden'); }
 function hide(id)  { document.getElementById(id).classList.add('hidden'); }
 
 function videoCard(v) {
-  const cover = safeUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`;
+  const cover = mediaUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`;
   return `<a href="video.html?id=${v.id}" class="video-card">
     <div class="card-thumb">
       <img src="${esc(cover)}" loading="lazy" alt="${esc(v.title)}"
@@ -125,16 +125,16 @@ async function loadVideo() {
     const wrap = document.getElementById('playerWrap');
     if (v.video_type === 'upload' && v.video_file) {
       wrap.innerHTML = `<video id="player" playsinline controls class="w-full">
-        <source src="${API_BASE}${v.video_file}" type="video/mp4">
+        <source src="${mediaUrl(v.video_file)}" type="video/mp4">
       </video>`;
     } else if (v.video_url && v.video_url.includes('youtube.com/embed')) {
       wrap.innerHTML = `<div class="plyr__video-embed" id="player">
-        <iframe src="${v.video_url}?rel=0&modestbranding=1" allowfullscreen
+        <iframe src="${mediaUrl(v.video_url)}?rel=0&modestbranding=1" allowfullscreen
           allow="autoplay;fullscreen;picture-in-picture"></iframe>
       </div>`;
     } else if (v.video_url) {
       wrap.innerHTML = `<video id="player" playsinline controls class="w-full">
-        <source src="${v.video_url}" type="video/mp4">
+        <source src="${mediaUrl(v.video_url)}" type="video/mp4">
       </video>`;
     } else {
       wrap.innerHTML = `<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;background:#111;color:var(--muted);">${t('no_source')}</div>`;

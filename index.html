@@ -92,7 +92,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
-import { api, isLoggedIn } from './js/api.js';
+import { api, isLoggedIn, mediaUrl } from './js/api.js';
 import { applyI18n, setRuntimeLang, t, safeUrl, esc } from './js/main.js';
 
 // 前台首页固定使用印尼语（Bahasa Indonesia），无语言切换按钮
@@ -130,7 +130,7 @@ function toast(msg, type = 'info') {
 // ── 视频卡片 ──────────────────────────────────────────────────────────────
 // 标题/分类名一律走 esc()，避免含 < > " 的数据破坏布局或注入脚本
 function videoCard(v) {
-  const cover = safeUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`;
+  const cover = mediaUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`;
   return `
   <a href="video.html?id=${v.id}" class="video-card">
     <div class="card-thumb">
@@ -214,8 +214,8 @@ async function loadBanners() {
       document.getElementById(wrapId).style.display = '';
       const slidesEl = document.getElementById(slidesId);
       slidesEl.innerHTML = items.map(b => {
-        // URL 过滤：挡掉 javascript: 等不安全协议
-        const src  = safeUrl(b.image_url);
+        // mediaUrl：后端相对路径(/static/…)拼成 Railway 绝对地址，外链原样，挡 javascript:
+        const src  = mediaUrl(b.image_url);
         const link = safeUrl(b.link_url);
         if (!src) return '';   // 无有效媒体地址则跳过该 slide
         // 支持 image / gif（均用 img）/ video（用 video 标签自动播放）

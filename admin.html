@@ -304,7 +304,7 @@
 <div class="toast-stack" id="toastStack"></div>
 
 <script type="module">
-import { api, isLoggedIn, clearToken } from './js/api.js';
+import { api, isLoggedIn, clearToken, mediaUrl } from './js/api.js';
 import { applyI18n, setLang, getLang, t, t2, LANG_LABELS, SUPPORTED_LANGS } from './js/main.js';
 
 // 通用：给表格 tbody 显示 loading / 错误行（Item 5）
@@ -439,7 +439,7 @@ async function loadDashboard() {
     tbody.innerHTML = (s.recent || []).map(v => `
       <tr>
         <td><div style="display:flex;align-items:center;gap:.625rem;">
-          <img src="${v.cover_url}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+          <img src="${mediaUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.src='https://picsum.photos/seed/${v.id}/640/360'">
           <a href="video.html?id=${v.id}" target="_blank"
              style="font-weight:500;color:var(--text);font-size:.8125rem;">${v.title}</a>
         </div></td>
@@ -485,7 +485,7 @@ async function loadVideoTable(page = 1) {
       return `
       <tr>
         <td><div style="display:flex;align-items:center;gap:.625rem;">
-          <img src="${v.cover_url}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+          <img src="${mediaUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.src='https://picsum.photos/seed/${v.id}/640/360'">
           <div style="min-width:0;">
             <div style="font-size:.8125rem;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">${v.title}</div>
             <div class="text-muted text-xs">▶ ${v.views}</div>
@@ -724,7 +724,7 @@ async function loadBanners() {
     const tbody = document.getElementById('bannerTableBody');
     const mediaLabel = { image: t('media_image'), gif: t('media_gif'), video: t('media_video') };
     const mediaPreview = (b) => {
-      const src = (b.image_url && /^(https?:\/\/|\/)/i.test(b.image_url)) ? b.image_url : '';
+      const src = mediaUrl(b.image_url);
       if (!src) return '—';
       if (b.media_type === 'video')
         return `<video src="${src}" muted style="width:80px;height:50px;object-fit:cover;border-radius:6px;"></video>`;

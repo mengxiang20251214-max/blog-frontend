@@ -6,6 +6,27 @@
 export const API_BASE = 'https://my-project-production-ef6d.up.railway.app';
 const TOKEN_KEY = 'vh_token';
 
+/**
+ * 把后端返回的媒体地址解析成「浏览器能正确访问的绝对地址」。
+ *
+ * 根本问题：后端把上传的 Banner/封面/视频存成「根相对路径」(/static/uploads/…)，
+ * 而前端跑在 Vercel。根相对路径会按【当前页面所在域名】解析 —— 也就是 Vercel，
+ * 但文件其实在 Railway 后端 → 必然 404。
+ *
+ * 解决：凡是以 / 开头的后端相对路径，统一拼上 API_BASE（Railway 域名）。
+ * 已经是 http(s):// 的外链（如 picsum、YouTube、用户填的图床）原样返回。
+ * 其它（含 javascript: 等）一律拒绝，兼做 XSS 过滤。
+ *
+ * 注：<img>/<video> 跨域加载不受 CORS 限制，所以直接指向 Railway 即可。
+ */
+export function mediaUrl(u) {
+  if (!u) return '';
+  const s = String(u).trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  if (s.startsWith('/')) return API_BASE + s;
+  return '';
+}
+
 // ── Token 管理 ────────────────────────────────────────────────────────────
 export function getToken()        { return localStorage.getItem(TOKEN_KEY); }
 export function saveToken(t)      { localStorage.setItem(TOKEN_KEY, t); }
