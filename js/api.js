@@ -191,5 +191,11 @@ export const api = {
     saveSettings(data) {
       return authReq('/api/admin/settings', { method: 'POST', body: data });
     },
+    /** 修改密码 */
+    changePassword(old_password, new_password) {
+      return authReq('/api/admin/change-password', {
+        method: 'POST', body: { old_password, new_password },
+      });
+    },
   },
 };
