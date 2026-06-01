@@ -24,7 +24,8 @@
       <svg class="search-icon" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
-      <input id="searchInput" class="input" type="search" placeholder="搜索视频..." data-i18n-ph="search_ph">
+      <input id="searchInput" class="input" type="search" placeholder="搜索视频..." data-i18n-ph="search_ph"
+           aria-label="搜索视频" data-i18n-title="search_ph">
     </div>
     <div class="navbar-links">
       <a href="index.html" class="nav-link" data-i18n="nav_home">首页</a>
@@ -56,6 +57,9 @@
 
   <!-- 主内容 -->
   <main class="page-main">
+    <!-- 分类筛选栏（动态填充；后端按 category_id 过滤） -->
+    <div id="catFilter" class="filter-row" role="tablist" aria-label="分类筛选"></div>
+
     <!-- 标题行 -->
     <div class="flex items-center justify-between" style="margin-bottom:.75rem;">
       <h2 id="sectionTitle" style="font-size:.9375rem; font-weight:600;">最新视频</h2>
@@ -89,7 +93,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
 import { api, isLoggedIn } from './js/api.js';
-import { applyI18n, setRuntimeLang, t, safeUrl } from './js/main.js';
+import { applyI18n, setRuntimeLang, t, safeUrl, esc } from './js/main.js';
 
 // 前台首页固定使用印尼语（Bahasa Indonesia），无语言切换按钮
 setRuntimeLang('id');
@@ -102,7 +106,17 @@ if (isLoggedIn()) {
 }
 
 // ── 状态 ──────────────────────────────────────────────────────────────────
-let state = { page: 1, sort: 'created_at', q: '', totalPages: 1 };
+let state = { page: 1, sort: 'created_at', q: '', category_id: '', totalPages: 1 };
+
+// 骨架屏：加载时先占位，避免「整页空白 → 突然跳出」的闪烁，提升感知速度
+const SKELETON = Array.from({ length: 12 }, () =>
+  `<div class="video-card skeleton-card">
+     <div class="skeleton card-thumb"></div>
+     <div class="card-body">
+       <div class="skeleton skeleton-line" style="width:90%"></div>
+       <div class="skeleton skeleton-line" style="width:55%;margin-top:.5rem"></div>
+     </div>
+   </div>`).join('');
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 function toast(msg, type = 'info') {
@@ -114,24 +128,26 @@ function toast(msg, type = 'info') {
 }
 
 // ── 视频卡片 ──────────────────────────────────────────────────────────────
+// 标题/分类名一律走 esc()，避免含 < > " 的数据破坏布局或注入脚本
 function videoCard(v) {
+  const cover = safeUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`;
   return `
   <a href="video.html?id=${v.id}" class="video-card">
     <div class="card-thumb">
-      <img src="${v.cover_url}" alt="${v.title}" loading="lazy"
-           onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
+      <img src="${esc(cover)}" alt="${esc(v.title)}" loading="lazy"
+           onerror="this.onerror=null;this.src='https://picsum.photos/seed/${v.id}/640/360'">
       <div class="card-play"><div class="card-play-btn">
         <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
           <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
         </svg>
       </div></div>
-      ${v.category_name ? `<span class="card-cat">${v.category_name}</span>` : ''}
+      ${v.category_name ? `<span class="card-cat">${esc(v.category_name)}</span>` : ''}
     </div>
     <div class="card-body">
-      <div class="card-title">${v.title}</div>
+      <div class="card-title">${esc(v.title)}</div>
       <div class="card-meta">
         <span>▶ ${v.views}</span>
-        <span>${v.created_at || ''}</span>
+        <span>${esc(v.created_at || '')}</span>
       </div>
     </div>
   </a>`;
@@ -140,10 +156,11 @@ function videoCard(v) {
 // ── 加载视频 ──────────────────────────────────────────────────────────────
 async function loadVideos() {
   const grid = document.getElementById('videoGrid');
-  grid.innerHTML = '<div class="loader-wrap"><div class="spinner"></div></div>';
+  grid.innerHTML = SKELETON;
 
   try {
     const params = { page: state.page, page_size: 12, sort: state.sort };
+    if (state.category_id) params.category_id = state.category_id;
 
     let data;
     if (state.q.trim()) {
@@ -228,6 +245,41 @@ async function loadBanners() {
   } catch { }
 }
 
+// ── 分类筛选 ──────────────────────────────────────────────────────────────
+async function loadCategoryFilter() {
+  const box = document.getElementById('catFilter');
+  try {
+    const cats = await api.categories();
+    // 只展示有视频的分类，避免一堆空分类干扰浏览
+    const usable = (cats || []).filter(c => (c.video_count || 0) > 0);
+    if (!usable.length) { box.innerHTML = ''; return; }
+    const chip = (id, label, count) =>
+      `<button class="chip${String(state.category_id) === String(id) ? ' active' : ''}"
+               role="tab" data-cat="${id}" aria-selected="${String(state.category_id) === String(id)}">
+         ${esc(label)}${count != null ? ` <span class="chip-count">${count}</span>` : ''}
+       </button>`;
+    box.innerHTML =
+      chip('', t('all'), null) +
+      usable.map(c => chip(c.id, c.name, c.video_count)).join('');
+  } catch { box.innerHTML = ''; }
+}
+
+document.getElementById('catFilter').addEventListener('click', e => {
+  const btn = e.target.closest('[data-cat]');
+  if (!btn) return;
+  const id = btn.dataset.cat;
+  if (String(state.category_id) === String(id)) return;
+  state.category_id = id;
+  state.page = 1;
+  // 高亮切换（不重新请求分类，纯前端切 active）
+  document.querySelectorAll('#catFilter .chip').forEach(c => {
+    const on = c.dataset.cat === id;
+    c.classList.toggle('active', on);
+    c.setAttribute('aria-selected', on);
+  });
+  loadVideos();
+});
+
 // ── 搜索 ──────────────────────────────────────────────────────────────────
 let searchTimer;
 document.getElementById('searchInput').addEventListener('input', e => {
@@ -254,6 +306,7 @@ async function loadSettings() {
 // ── 初始化 ────────────────────────────────────────────────────────────────
 loadSettings();
 loadBanners();
+loadCategoryFilter();
 loadVideos();
 </script>
 </body>

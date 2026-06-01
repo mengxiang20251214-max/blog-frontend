@@ -233,6 +233,17 @@ export function safeUrl(u) {
 }
 
 /**
+ * HTML 转义：把视频标题/分类名等数据安全插入到 innerHTML / 属性值里。
+ * 标题里含有 < > " ' & 时既不会破坏布局，也挡掉 onerror= 之类的注入。
+ */
+export function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/**
  * 应用 i18n 到 DOM：
  *  - [data-i18n]      → textContent
  *  - [data-i18n-ph]   → placeholder

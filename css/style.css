@@ -270,6 +270,21 @@ select.input { cursor: pointer; }
 .empty-state { text-align: center; padding: 3rem 0; color: var(--muted); }
 .empty-state svg { margin: 0 auto 1rem; opacity: .25; }
 
+/* ── 骨架屏（加载占位，减少闪烁、提升感知速度） ──────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg3) 25%, #262626 37%, var(--bg3) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+.skeleton-card { pointer-events: none; }
+.skeleton.card-thumb { aspect-ratio: 16/9; }
+.skeleton-line { height: 11px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* 分类筛选 chip 上的计数徽标 */
+.chip-count { opacity: .6; font-size: .7rem; margin-left: .15rem; }
+
 /* ── Toast ───────────────────────────────────────────────────────────────── */
 .toast-stack { position: fixed; top: 68px; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: .5rem; pointer-events: none; }
 .toast {
@@ -368,6 +383,15 @@ footer { border-top: 1px solid var(--border); padding: 1.25rem; margin-top: 2rem
   .stat-grid { grid-template-columns: 1fr; }
   .admin-sidebar { width: 56px; }
   .admin-sidebar .side-link span { display: none; }
+}
+@media (max-width: 640px) {
+  /* 手机：隐藏品牌文字只留 logo，把横向空间让给搜索框 */
+  .navbar-inner { gap: .5rem; padding: 0 .75rem; }
+  .navbar-brand span { display: none; }
+  .navbar-search { max-width: none; }
+  /* 分类筛选可横向滑动，不挤压换行占满屏幕 */
+  .filter-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .filter-row::-webkit-scrollbar { display: none; }
 }
 @media (max-width: 480px) {
   .video-grid { grid-template-columns: 1fr; }
