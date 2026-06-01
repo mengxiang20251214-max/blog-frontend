@@ -114,6 +114,7 @@
         <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
           <button class="btn btn-primary" onclick="openVideoModal()" data-i18n="btn_add_video">+ 添加视频</button>
           <button class="btn btn-outline" onclick="openBatchModal()" data-i18n="btn_batch">批量上传</button>
+          <button class="btn btn-outline" id="backfillBtn" onclick="backfillCovers()" data-i18n="cover_backfill" title="给所有缺封面的上传视频自动补封面">补全封面</button>
         </div>
         <div class="table-wrap">
           <div class="table-header" style="gap:.5rem;flex-wrap:wrap;">
@@ -291,10 +292,11 @@
         <div class="form-group"><label class="form-label">排序值</label><input id="bSort" class="input" type="number" value="0"></div>
         <div class="form-group"><label class="form-label">轮播间隔 (ms)</label><input id="bDur" class="input" type="number" value="3000" min="500" step="500"></div>
       </div>
+      <div id="bannerHint" class="hidden text-xs" style="background:rgba(99,102,241,.1);color:var(--primary);padding:.5rem .75rem;border-radius:6px;">⏳ 正在上传媒体，请稍候…</div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal('bannerModal')">取消</button>
-      <button class="btn btn-primary" onclick="saveBanner()">保存</button>
+      <button id="bannerSaveBtn" class="btn btn-primary" onclick="saveBanner()">保存</button>
     </div>
   </div>
 </div>
@@ -494,6 +496,7 @@ async function loadVideoTable(page = 1) {
         <td class="text-muted text-xs">${v.created_at||''}</td>
         <td style="text-align:right;">
           <div style="display:flex;justify-content:flex-end;gap:.25rem;">
+            ${v.video_type==='upload' ? `<button class="btn btn-outline btn-sm" data-act="cover" data-id="${v.id}" data-i18n-title="cover_regen" title="重提封面">🖼</button>` : ''}
             <button class="btn btn-outline btn-sm" data-act="edit" data-id="${v.id}" data-i18n="btn_edit">编辑</button>
             <button class="btn btn-danger btn-sm" data-act="del" data-id="${v.id}" data-i18n="btn_delete">删除</button>
           </div>
@@ -523,7 +526,39 @@ document.getElementById('videoTableBody').addEventListener('click', e => {
   if (!v) return;
   if (btn.dataset.act === 'edit') openVideoModal(v);
   else if (btn.dataset.act === 'del') deleteVideo(v.id, v.title);
+  else if (btn.dataset.act === 'cover') regenCover(v.id, btn);
 });
+
+// 重提单个视频封面：转圈 → 成功后刷新当前页看到新封面
+window.regenCover = async function(id, btn) {
+  const old = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳';
+  try {
+    await api.admin.regenerateCover(id);
+    toast(t('cover_done'), 'success');
+    loadVideoTable(videoPage);
+  } catch (e) {
+    toast(e.message || t('cover_fail'), 'error');
+    btn.disabled = false; btn.textContent = old;
+  }
+};
+
+// 批量补全封面：后台异步，提示已排入的任务数，稍后自动刷新
+window.backfillCovers = async function() {
+  const btn = document.getElementById('backfillBtn');
+  btn.disabled = true; const old = btn.textContent; btn.textContent = '⏳';
+  try {
+    const res = await api.admin.backfillCovers();
+    if (res.scheduled > 0) {
+      toast(t2('cover_scheduled', { x: res.scheduled }), 'success');
+      // 后台逐个生成，给点时间再刷新
+      setTimeout(() => loadVideoTable(videoPage), 4000);
+    } else {
+      toast(t('no_pending_cover'), 'info');
+    }
+  } catch (e) { toast(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = old; }
+};
 
 // 视频搜索 / 分类筛选（标题防抖 350ms；两条件叠加，变更即回到第 1 页）
 let videoSearchTimer;
@@ -705,6 +740,8 @@ async function loadBanners() {
         <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;${b.is_active?'background:rgba(16,185,129,.15);color:#10b981;':'background:rgba(156,163,175,.1);color:#9ca3af;'}">${b.is_active?t('st_active'):t('st_inactive')}</span></td>
         <td style="text-align:right;">
           <div style="display:flex;justify-content:flex-end;gap:.25rem;">
+            <button class="btn btn-outline btn-sm" data-act="up" data-id="${b.id}" title="上移">↑</button>
+            <button class="btn btn-outline btn-sm" data-act="down" data-id="${b.id}" title="下移">↓</button>
             <button class="btn btn-outline btn-sm" data-act="toggle" data-id="${b.id}">${b.is_active?t('st_inactive'):t('st_active')}</button>
             <button class="btn btn-outline btn-sm" data-act="edit" data-id="${b.id}" data-i18n="btn_edit">编辑</button>
             <button class="btn btn-danger btn-sm" data-act="del" data-id="${b.id}" data-i18n="btn_delete">删除</button>
@@ -724,7 +761,14 @@ document.getElementById('bannerTableBody').addEventListener('click', e => {
   if (btn.dataset.act === 'toggle') toggleBanner(id);
   else if (btn.dataset.act === 'edit' && b) openBannerModal(b);
   else if (btn.dataset.act === 'del') deleteBanner(id);
+  else if (btn.dataset.act === 'up' || btn.dataset.act === 'down') moveBanner(id, btn.dataset.act);
 });
+
+// Banner 上移/下移：服务端交换同位置相邻两条的排序，完成后刷新列表
+window.moveBanner = async function(id, dir) {
+  try { await api.admin.moveBanner(id, dir); loadBanners(); }
+  catch (e) { toast(e.message, 'error'); }
+};
 
 window.openBannerModal = function(b = null) {
   document.getElementById('bannerModalTitle').textContent = b ? t('modal_banner_edit') : t('modal_banner_add');
@@ -752,12 +796,19 @@ window.saveBanner = async function() {
   fd.append('duration',   parseInt(document.getElementById('bDur').value)  || 3000);
   const file = document.getElementById('bFile').files[0];
   if (file) fd.append('media_file', file);
+
+  // 上传大媒体（视频/GIF）可能耗时：禁用按钮 + 提示，避免重复点击
+  const btn = document.getElementById('bannerSaveBtn');
+  const hint = document.getElementById('bannerHint');
+  btn.disabled = true; btn.textContent = t('saving');
+  if (file) { hint.textContent = t('uploading_banner'); hint.classList.remove('hidden'); }
   try {
     id ? await api.admin.editBanner(id, fd) : await api.admin.addBanner(fd);
     closeModal('bannerModal');
     loadBanners();
     toast(id ? t('updated') : t('added'), 'success');
   } catch(e) { toast(e.message,'error'); }
+  finally { btn.disabled = false; btn.textContent = t('btn_save'); hint.classList.add('hidden'); }
 };
 
 window.toggleBanner = async function(id) {

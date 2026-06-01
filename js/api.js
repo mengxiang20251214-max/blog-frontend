@@ -156,6 +156,14 @@ export const api = {
     deleteVideo(id) {
       return authReq(`/api/admin/videos/${id}`, { method: 'DELETE' });
     },
+    /** 为单个上传视频重新提取封面 */
+    regenerateCover(id) {
+      return authReq(`/api/admin/videos/${id}/cover`, { method: 'POST' });
+    },
+    /** 给所有缺封面的上传视频批量补全封面（后台异步） */
+    backfillCovers() {
+      return authReq('/api/admin/covers/backfill', { method: 'POST' });
+    },
 
     // -- 分类 --
     /** 新增分类 */
@@ -183,6 +191,10 @@ export const api = {
     /** 切换 Banner 启用状态 */
     toggleBanner(id) {
       return authReq(`/api/admin/banners/${id}/toggle`, { method: 'POST' });
+    },
+    /** 上移/下移 Banner（dir: 'up' | 'down'），同位置内交换排序 */
+    moveBanner(id, dir) {
+      return authReq(`/api/admin/banners/${id}/move?dir=${dir}`, { method: 'POST' });
     },
     /** 删除 Banner */
     deleteBanner(id) {

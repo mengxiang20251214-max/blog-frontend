@@ -63,6 +63,9 @@ const I18N = {
     added: '已添加', updated: '已更新', deleted: '已删除', saving: '保存中…',
     modal_video_add: '添加视频', modal_video_edit: '编辑视频',
     modal_banner_add: '新增 Banner', modal_banner_edit: '编辑 Banner',
+    cover_regen: '重提封面', cover_backfill: '补全封面', cover_done: '封面已更新',
+    cover_fail: '封面提取失败', cover_scheduled: '已排入封面任务：{x} 个',
+    uploading_banner: '⏳ 正在上传媒体，请稍候…', no_pending_cover: '没有需要补封面的视频',
   },
   en: {
     nav_home: 'Home', nav_admin: 'Admin',
@@ -106,6 +109,9 @@ const I18N = {
     added: 'Added', updated: 'Updated', deleted: 'Deleted', saving: 'Saving…',
     modal_video_add: 'Add Video', modal_video_edit: 'Edit Video',
     modal_banner_add: 'Add Banner', modal_banner_edit: 'Edit Banner',
+    cover_regen: 'Regen cover', cover_backfill: 'Backfill covers', cover_done: 'Cover updated',
+    cover_fail: 'Cover extraction failed', cover_scheduled: 'Queued {x} cover job(s)',
+    uploading_banner: '⏳ Uploading media, please wait…', no_pending_cover: 'No videos need a cover',
   },
   th: {
     nav_home: 'หน้าแรก', nav_admin: 'จัดการ',
@@ -149,6 +155,9 @@ const I18N = {
     added: 'เพิ่มแล้ว', updated: 'อัปเดตแล้ว', deleted: 'ลบแล้ว', saving: 'กำลังบันทึก…',
     modal_video_add: 'เพิ่มวิดีโอ', modal_video_edit: 'แก้ไขวิดีโอ',
     modal_banner_add: 'เพิ่มแบนเนอร์', modal_banner_edit: 'แก้ไขแบนเนอร์',
+    cover_regen: 'สร้างปกใหม่', cover_backfill: 'เติมปก', cover_done: 'อัปเดตปกแล้ว',
+    cover_fail: 'สร้างปกล้มเหลว', cover_scheduled: 'เข้าคิวสร้างปก {x} รายการ',
+    uploading_banner: '⏳ กำลังอัปโหลดสื่อ โปรดรอ…', no_pending_cover: 'ไม่มีวิดีโอที่ต้องใส่ปก',
   },
   id: {
     nav_home: 'Beranda', nav_admin: 'Admin',
@@ -192,6 +201,9 @@ const I18N = {
     added: 'Ditambahkan', updated: 'Diperbarui', deleted: 'Dihapus', saving: 'Menyimpan…',
     modal_video_add: 'Tambah Video', modal_video_edit: 'Ubah Video',
     modal_banner_add: 'Tambah Banner', modal_banner_edit: 'Ubah Banner',
+    cover_regen: 'Buat sampul', cover_backfill: 'Lengkapi sampul', cover_done: 'Sampul diperbarui',
+    cover_fail: 'Ekstraksi sampul gagal', cover_scheduled: '{x} tugas sampul diantrekan',
+    uploading_banner: '⏳ Mengunggah media, harap tunggu…', no_pending_cover: 'Tak ada video tanpa sampul',
   },
 };
 
