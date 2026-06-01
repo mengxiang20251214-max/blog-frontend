@@ -303,7 +303,17 @@
 
 <script type="module">
 import { api, isLoggedIn, clearToken } from './js/api.js';
-import { applyI18n, setLang, getLang, t, LANG_LABELS, SUPPORTED_LANGS } from './js/main.js';
+import { applyI18n, setLang, getLang, t, t2, LANG_LABELS, SUPPORTED_LANGS } from './js/main.js';
+
+// 通用：给表格 tbody 显示 loading / 错误行（Item 5）
+function tbodyLoading(id, cols) {
+  document.getElementById(id).innerHTML =
+    `<tr><td colspan="${cols}"><div class="loader-wrap"><div class="spinner"></div></div></td></tr>`;
+}
+function tbodyError(id, cols) {
+  document.getElementById(id).innerHTML =
+    `<tr><td colspan="${cols}" style="text-align:center;padding:2rem;color:#ef4444;">${t('load_error')}</td></tr>`;
+}
 
 // ── 语言切换（中文 / English / ไทย，存 localStorage） ────────────────────────
 function buildLangSwitch() {
@@ -330,12 +340,20 @@ buildLangSwitch();
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 window.toast = function(msg, type = 'info') {
+  if (!msg || msg === '__SESSION_EXPIRED__') return;   // 哨兵：会话过期由专门监听处理，避免重复提示
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.textContent = msg;
   document.getElementById('toastStack').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 };
+
+// 会话过期：温和处理 —— 提示 + 回到登录态，不整页刷新，用户填写的内容不丢失
+window.addEventListener('vh-session-expired', () => {
+  toast(t('session_expired'), 'error');
+  document.getElementById('adminLayout').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+});
 
 // ── 模态框 ────────────────────────────────────────────────────────────────
 window.closeModal = (id) => document.getElementById(id).classList.remove('open');
@@ -409,6 +427,7 @@ checkAuth();
 
 // ── 仪表盘 ────────────────────────────────────────────────────────────────
 async function loadDashboard() {
+  tbodyLoading('recentVideos', 4);
   try {
     const s = await api.admin.stats();
     document.getElementById('statVideos').textContent  = s.videos;
@@ -422,18 +441,19 @@ async function loadDashboard() {
           <a href="video.html?id=${v.id}" target="_blank"
              style="font-weight:500;color:var(--text);font-size:.8125rem;">${v.title}</a>
         </div></td>
-        <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${v.video_type==='upload'?'本地':'URL'}</span></td>
+        <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${v.video_type==='upload'?t('src_local'):t('src_url')}</span></td>
         <td class="text-muted text-xs">${v.category_name || '—'}</td>
         <td class="text-muted text-xs">${v.created_at || ''}</td>
-      </tr>`).join('') || '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">暂无视频</td></tr>';
-  } catch(e) { toast(e.message, 'error'); }
+      </tr>`).join('') || `<tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">${t('empty')}</td></tr>`;
+  } catch(e) { tbodyError('recentVideos', 4); toast(e.message, 'error'); }
 }
 
 // ── 视频管理 ──────────────────────────────────────────────────────────────
-let videoPage = 1, allCategories = [], videoFilterReady = false;
+let videoPage = 1, allCategories = [], videoFilterReady = false, videoItems = [];
 
 async function loadVideoTable(page = 1) {
   videoPage = page;
+  tbodyLoading('videoTableBody', 5);
   try {
     const params = { page, page_size: 15 };
     const kw  = document.getElementById('videoSearch').value.trim();
@@ -455,9 +475,12 @@ async function loadVideoTable(page = 1) {
       sel.value = cur;
       videoFilterReady = true;
     }
-    document.getElementById('videoCount').textContent = `共 ${data.total} 个视频`;
+    document.getElementById('videoCount').textContent = `${data.total} ${t('unit_videos')}`;
+    videoItems = data.items || [];      // 供事件委托按 id 取对象（避免 onclick 里 JSON.stringify 注入）
     const tbody = document.getElementById('videoTableBody');
-    tbody.innerHTML = (data.items || []).map(v => `
+    tbody.innerHTML = videoItems.map(v => {
+      const srcTag = v.video_type==='upload' ? `${t('src_local')} ${v.file_size_str||''}` : t('src_url');
+      return `
       <tr>
         <td><div style="display:flex;align-items:center;gap:.625rem;">
           <img src="${v.cover_url}" style="width:52px;height:33px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.src='https://picsum.photos/seed/${v.id}/640/360'">
@@ -466,16 +489,17 @@ async function loadVideoTable(page = 1) {
             <div class="text-muted text-xs">▶ ${v.views}</div>
           </div>
         </div></td>
-        <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${v.video_type==='upload'?`本地 ${v.file_size_str||''}`:' URL'}</span></td>
+        <td><span style="font-size:.7rem;padding:.15rem .4rem;border-radius:999px;${v.video_type==='upload'?'background:rgba(99,102,241,.15);color:#818cf8;':'background:rgba(59,130,246,.15);color:#60a5fa;'}">${srcTag}</span></td>
         <td class="text-muted text-xs">${v.category_name||'—'}</td>
         <td class="text-muted text-xs">${v.created_at||''}</td>
         <td style="text-align:right;">
           <div style="display:flex;justify-content:flex-end;gap:.25rem;">
-            <button class="btn btn-outline btn-sm" onclick='openVideoModal(${JSON.stringify(v)})' data-i18n="btn_edit">编辑</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteVideo(${v.id},'${v.title.replace(/'/g,"\\'")}')" data-i18n="btn_delete">删除</button>
+            <button class="btn btn-outline btn-sm" data-act="edit" data-id="${v.id}" data-i18n="btn_edit">编辑</button>
+            <button class="btn btn-danger btn-sm" data-act="del" data-id="${v.id}" data-i18n="btn_delete">删除</button>
           </div>
         </td>
-      </tr>`).join('') || '<tr><td colspan="5" class="text-muted" style="text-align:center;padding:2rem;">'+t('empty')+'</td></tr>';
+      </tr>`;
+    }).join('') || `<tr><td colspan="5" class="text-muted" style="text-align:center;padding:2rem;">${t('empty')}</td></tr>`;
     applyI18n(document.getElementById('videoTableBody'));
 
     // 分页
@@ -485,8 +509,21 @@ async function loadVideoTable(page = 1) {
     pg += `<span class="text-muted text-sm" style="padding:.35rem .5rem;">${page}/${pages}</span>`;
     if (page < pages) pg += `<button class="page-btn" onclick="loadVideoTable(${page+1})">${t('next')}</button>`;
     document.getElementById('videoPagination').innerHTML = pg;
-  } catch(e) { toast(e.message, 'error'); }
+  } catch(e) { tbodyError('videoTableBody', 5); toast(e.message, 'error'); }
 }
+
+// 分页按钮用内联 onclick 调用，需暴露到全局（本脚本是 module，默认不在 window 上）
+window.loadVideoTable = loadVideoTable;
+
+// 视频表事件委托：编辑/删除按 data-id 从内存数组取对象（标题含引号也不会出错）
+document.getElementById('videoTableBody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const v = videoItems.find(x => x.id === Number(btn.dataset.id));
+  if (!v) return;
+  if (btn.dataset.act === 'edit') openVideoModal(v);
+  else if (btn.dataset.act === 'del') deleteVideo(v.id, v.title);
+});
 
 // 视频搜索 / 分类筛选（标题防抖 350ms；两条件叠加，变更即回到第 1 页）
 let videoSearchTimer;
@@ -498,16 +535,16 @@ document.getElementById('videoCatFilter').addEventListener('change', () => loadV
 
 // 视频类型切换
 let currentVtype = 'url';
-window.setVtype = function(t) {
-  currentVtype = t;
-  document.getElementById('urlGroup').classList.toggle('hidden', t !== 'url');
-  document.getElementById('fileGroup').classList.toggle('hidden', t !== 'upload');
-  document.getElementById('btnUrlMode').className  = `btn btn-sm ${t==='url'  ?'btn-primary':'btn-outline'}`;
-  document.getElementById('btnFileMode').className = `btn btn-sm ${t==='upload'?'btn-primary':'btn-outline'}`;
+window.setVtype = function(vt) {
+  currentVtype = vt;
+  document.getElementById('urlGroup').classList.toggle('hidden', vt !== 'url');
+  document.getElementById('fileGroup').classList.toggle('hidden', vt !== 'upload');
+  document.getElementById('btnUrlMode').className  = `btn btn-sm ${vt==='url'  ?'btn-primary':'btn-outline'}`;
+  document.getElementById('btnFileMode').className = `btn btn-sm ${vt==='upload'?'btn-primary':'btn-outline'}`;
 };
 
 window.openVideoModal = function(v = null) {
-  document.getElementById('videoModalTitle').textContent = v ? '编辑视频' : '添加视频';
+  document.getElementById('videoModalTitle').textContent = v ? t('modal_video_edit') : t('modal_video_add');
   document.getElementById('editVideoId').value = v?.id || '';
   document.getElementById('vTitle').value = v?.title || '';
   document.getElementById('vUrl').value   = v?.video_url || '';
@@ -533,8 +570,8 @@ window.saveVideo = async function() {
   const id = document.getElementById('editVideoId').value;
   const btn = document.getElementById('videoSaveBtn');
   const hint = document.getElementById('uploadHint');
-  btn.disabled = true; btn.textContent = '保存中...';
-  if (currentVtype === 'upload') hint.classList.remove('hidden');
+  btn.disabled = true; btn.textContent = t('saving');
+  if (currentVtype === 'upload') { hint.textContent = t('uploading'); hint.classList.remove('hidden'); }
 
   const fd = new FormData();
   fd.append('video_type', currentVtype);
@@ -554,17 +591,17 @@ window.saveVideo = async function() {
     }
     closeModal('videoModal');
     loadVideoTable(videoPage);
-    toast(id ? '视频已更新' : '视频已添加', 'success');
+    toast(id ? t('updated') : t('added'), 'success');
   } catch(e) { toast(e.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = '保存'; hint.classList.add('hidden'); }
+  finally { btn.disabled = false; btn.textContent = t('btn_save'); hint.classList.add('hidden'); }
 };
 
 window.deleteVideo = async function(id, title) {
-  if (!confirm(`确认删除「${title}」？`)) return;
+  if (!confirm(t2('confirm_del_video', { x: title }))) return;
   try {
     await api.admin.deleteVideo(id);
     loadVideoTable(videoPage);
-    toast('已删除', 'success');
+    toast(t('deleted'), 'success');
   } catch(e) { toast(e.message, 'error'); }
 };
 
@@ -581,8 +618,9 @@ window.batchUpload = async function() {
   const files = document.getElementById('batchFiles').files;
   if (!files.length) { toast('请选择文件', 'error'); return; }
   const btn = document.getElementById('batchSaveBtn');
-  btn.disabled = true; btn.textContent = '上传中...';
-  document.getElementById('batchHint').classList.remove('hidden');
+  btn.disabled = true; btn.textContent = t('saving');
+  const bhint = document.getElementById('batchHint');
+  bhint.textContent = t('uploading_batch'); bhint.classList.remove('hidden');
   const fd = new FormData();
   for (const f of files) fd.append('video_files', f);
   fd.append('title_prefix', document.getElementById('batchPrefix').value);
@@ -591,79 +629,105 @@ window.batchUpload = async function() {
     const res = await api.admin.batchUpload(fd);
     closeModal('batchModal');
     loadVideoTable(1);
-    toast(`成功上传 ${res.count} 个视频`, 'success');
+    toast(`${t('added')}: ${res.count}`, 'success');
   } catch(e) { toast(e.message, 'error'); }
-  finally { btn.disabled = false; btn.textContent = '开始上传'; document.getElementById('batchHint').classList.add('hidden'); }
+  finally { btn.disabled = false; btn.textContent = t('btn_batch'); bhint.classList.add('hidden'); }
 };
 
 // ── 分类管理 ──────────────────────────────────────────────────────────────
+let catItems = [];
 async function loadCategories() {
+  tbodyLoading('catTableBody', 4);
   try {
     const cats = await api.categories();
+    catItems = cats;
     const tbody = document.getElementById('catTableBody');
     tbody.innerHTML = cats.map(c => `
       <tr>
         <td style="font-weight:500;">${c.name}</td>
         <td class="text-muted text-xs">/${c.slug}</td>
         <td class="text-muted">${c.video_count||0}</td>
-        <td style="text-align:right;"><button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id},'${c.name.replace(/'/g,"\\'")}')" data-i18n="btn_delete">删除</button></td>
-      </tr>`).join('') || '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">'+t('empty')+'</td></tr>';
+        <td style="text-align:right;"><button class="btn btn-danger btn-sm" data-act="del" data-id="${c.id}" data-i18n="btn_delete">删除</button></td>
+      </tr>`).join('') || `<tr><td colspan="4" class="text-muted" style="text-align:center;padding:2rem;">${t('empty')}</td></tr>`;
     applyI18n(document.getElementById('catTableBody'));
-  } catch(e) { toast(e.message,'error'); }
+  } catch(e) { tbodyError('catTableBody', 4); toast(e.message,'error'); }
 }
+
+// 分类删除：事件委托（按 id 取对象，名称含引号也安全）
+document.getElementById('catTableBody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-act="del"]');
+  if (!btn) return;
+  const c = catItems.find(x => x.id === Number(btn.dataset.id));
+  if (c) deleteCategory(c.id, c.name);
+});
 
 window.addCategory = async function() {
   const name = document.getElementById('newCatName').value.trim();
-  if (!name) { toast('请输入分类名称','error'); return; }
+  if (!name) { toast(t('th_category'),'error'); return; }
   try {
     await api.admin.addCategory(name);
     document.getElementById('newCatName').value = '';
     loadCategories();
-    toast('分类已添加','success');
+    toast(t('added'),'success');
   } catch(e) { toast(e.message,'error'); }
 };
 
 window.deleteCategory = async function(id, name) {
-  if (!confirm(`删除「${name}」？该分类下的视频将变为无分类。`)) return;
-  try { await api.admin.deleteCategory(id); loadCategories(); toast('已删除','success'); }
+  if (!confirm(t2('confirm_del_cat', { x: name }))) return;
+  try { await api.admin.deleteCategory(id); loadCategories(); toast(t('deleted'),'success'); }
   catch(e) { toast(e.message,'error'); }
 };
 
 // ── Banner 管理 ────────────────────────────────────────────────────────────
+let bannerItems = [];
 async function loadBanners() {
   const pos = document.getElementById('bannerFilter').value;
+  tbodyLoading('bannerTableBody', 7);
   try {
     const list = await api.admin.banners(pos);
+    bannerItems = list;
     const tbody = document.getElementById('bannerTableBody');
-    const mediaLabel = { image: '🖼 图片', gif: '🎞 GIF', video: '🎬 视频' };
+    const mediaLabel = { image: t('media_image'), gif: t('media_gif'), video: t('media_video') };
     const mediaPreview = (b) => {
-      if (!b.image_url) return '—';
+      const src = (b.image_url && /^(https?:\/\/|\/)/i.test(b.image_url)) ? b.image_url : '';
+      if (!src) return '—';
       if (b.media_type === 'video')
-        return `<video src="${b.image_url}" muted style="width:80px;height:50px;object-fit:cover;border-radius:6px;"></video>`;
-      return `<img src="${b.image_url}" style="width:80px;height:50px;object-fit:cover;border-radius:6px;">`;
+        return `<video src="${src}" muted style="width:80px;height:50px;object-fit:cover;border-radius:6px;"></video>`;
+      return `<img src="${src}" style="width:80px;height:50px;object-fit:cover;border-radius:6px;">`;
     };
     tbody.innerHTML = list.map(b => `
       <tr>
         <td>${mediaPreview(b)}</td>
-        <td style="font-size:.8125rem;">${b.title||'（无标题）'}</td>
+        <td style="font-size:.8125rem;">${b.title||'—'}</td>
         <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;background:rgba(99,102,241,.15);color:#818cf8;">${b.position}</span></td>
         <td class="text-muted text-xs">${mediaLabel[b.media_type] || b.media_type || 'image'}</td>
         <td class="text-muted text-xs">${b.sort_order} · ${b.duration}ms</td>
-        <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;${b.is_active?'background:rgba(16,185,129,.15);color:#10b981;':'background:rgba(156,163,175,.1);color:#9ca3af;'}">${b.is_active?'启用':'停用'}</span></td>
+        <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;${b.is_active?'background:rgba(16,185,129,.15);color:#10b981;':'background:rgba(156,163,175,.1);color:#9ca3af;'}">${b.is_active?t('st_active'):t('st_inactive')}</span></td>
         <td style="text-align:right;">
           <div style="display:flex;justify-content:flex-end;gap:.25rem;">
-            <button class="btn btn-outline btn-sm" onclick="toggleBanner(${b.id})">${b.is_active?'停用':'启用'}</button>
-            <button class="btn btn-outline btn-sm" onclick='openBannerModal(${JSON.stringify(b)})' data-i18n="btn_edit">编辑</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteBanner(${b.id})" data-i18n="btn_delete">删除</button>
+            <button class="btn btn-outline btn-sm" data-act="toggle" data-id="${b.id}">${b.is_active?t('st_inactive'):t('st_active')}</button>
+            <button class="btn btn-outline btn-sm" data-act="edit" data-id="${b.id}" data-i18n="btn_edit">编辑</button>
+            <button class="btn btn-danger btn-sm" data-act="del" data-id="${b.id}" data-i18n="btn_delete">删除</button>
           </div>
         </td>
-      </tr>`).join('') || '<tr><td colspan="7" class="text-muted" style="text-align:center;padding:2rem;">'+t('empty')+'</td></tr>';
+      </tr>`).join('') || `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:2rem;">${t('empty')}</td></tr>`;
     applyI18n(document.getElementById('bannerTableBody'));
-  } catch(e) { toast(e.message,'error'); }
+  } catch(e) { tbodyError('bannerTableBody', 7); toast(e.message,'error'); }
 }
 
+// Banner 表事件委托：toggle / edit / del 按 data-id 取对象
+document.getElementById('bannerTableBody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const b = bannerItems.find(x => x.id === id);
+  if (btn.dataset.act === 'toggle') toggleBanner(id);
+  else if (btn.dataset.act === 'edit' && b) openBannerModal(b);
+  else if (btn.dataset.act === 'del') deleteBanner(id);
+});
+
 window.openBannerModal = function(b = null) {
-  document.getElementById('bannerModalTitle').textContent = b ? '编辑 Banner' : '新增 Banner';
+  document.getElementById('bannerModalTitle').textContent = b ? t('modal_banner_edit') : t('modal_banner_add');
   document.getElementById('editBannerId').value = b?.id || '';
   document.getElementById('bPos').value   = b?.position   || 'top';
   document.getElementById('bMedia').value = b?.media_type || 'image';
@@ -692,7 +756,7 @@ window.saveBanner = async function() {
     id ? await api.admin.editBanner(id, fd) : await api.admin.addBanner(fd);
     closeModal('bannerModal');
     loadBanners();
-    toast(id ? 'Banner updated' : 'Banner added', 'success');
+    toast(id ? t('updated') : t('added'), 'success');
   } catch(e) { toast(e.message,'error'); }
 };
 
@@ -700,8 +764,8 @@ window.toggleBanner = async function(id) {
   try { await api.admin.toggleBanner(id); loadBanners(); } catch(e) { toast(e.message,'error'); }
 };
 window.deleteBanner = async function(id) {
-  if (!confirm('确认删除？')) return;
-  try { await api.admin.deleteBanner(id); loadBanners(); toast('已删除','success'); } catch(e) { toast(e.message,'error'); }
+  if (!confirm(t('confirm_del_banner'))) return;
+  try { await api.admin.deleteBanner(id); loadBanners(); toast(t('deleted'),'success'); } catch(e) { toast(e.message,'error'); }
 };
 
 // ── 系统设置 ──────────────────────────────────────────────────────────────

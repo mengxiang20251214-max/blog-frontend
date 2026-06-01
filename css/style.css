@@ -132,7 +132,8 @@ select.input { cursor: pointer; }
 
 /* ── 顶部 Banner ─────────────────────────────────────────────────────────── */
 .banner-top { width: 100%; overflow: hidden; background: var(--bg2); max-height: 180px; position: relative; }
-.banner-top .swiper-slide img { width: 100%; height: 180px; object-fit: cover; }
+.banner-top .swiper-slide img,
+.banner-top .swiper-slide video { width: 100%; height: 180px; object-fit: cover; display: block; }
 .banner-top .swiper-button-prev,
 .banner-top .swiper-button-next {
   width: 28px !important; height: 28px !important;
@@ -155,7 +156,8 @@ select.input { cursor: pointer; }
   padding: 1rem .75rem;
 }
 .sidebar-banner { border-radius: var(--radius); overflow: hidden; }
-.sidebar-banner img { width: 100%; height: 340px; object-fit: cover; }
+.sidebar-banner img,
+.sidebar-banner video { width: 100%; height: 340px; object-fit: cover; display: block; }
 .page-main { flex: 1; min-width: 0; padding: 1.25rem 1rem; }
 
 /* ── 分类筛选 ────────────────────────────────────────────────────────────── */

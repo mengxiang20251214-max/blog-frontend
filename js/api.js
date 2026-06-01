@@ -42,9 +42,14 @@ async function req(path, opts = {}) {
 
   if (res.status === 401) {
     clearToken();
-    // 只有后台接口在 session 失效时才跳转登录页；公开页面与登录请求只抛错
-    if (needAuth && token) { window.location.href = 'admin.html'; return; }
-    throw new Error(await parseError(res, '用户名或密码错误'));
+    // 后台接口 session 失效：不整页刷新，派发事件由页面温和处理（toast + 回登录态），
+    // 抛出哨兵错误，调用方 catch 里的 toast 会忽略它（见 admin.html 的 toast 守卫）
+    if (needAuth && token) {
+      window.dispatchEvent(new CustomEvent('vh-session-expired'));
+      throw new Error('__SESSION_EXPIRED__');
+    }
+    // 登录请求本身（无 token）：抛出后端的真实错误信息
+    throw new Error(await parseError(res, 'Invalid username or password'));
   }
 
   if (!res.ok) {

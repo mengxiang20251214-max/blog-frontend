@@ -51,6 +51,18 @@ const I18N = {
     confirm_pwd: '确认新密码', pwd_mismatch: '两次输入的新密码不一致',
     pwd_short: '新密码至少 6 位', pwd_changed: '密码修改成功',
     all_categories: '全部分类',
+    src_local: '本地', src_url: 'URL',
+    st_active: '启用', st_inactive: '停用',
+    media_image: '🖼 图片', media_gif: '🎞 GIF', media_video: '🎬 视频',
+    uploading: '⏳ 正在上传，大文件需较长时间，请勿关闭…',
+    uploading_batch: '⏳ 批量上传中，请耐心等待…',
+    confirm_del_video: '确认删除「{x}」？', confirm_del_cat: '删除「{x}」？该分类下的视频将变为无分类。',
+    confirm_del_banner: '确认删除该 Banner？',
+    session_expired: '会话已过期，请重新登录',
+    load_error: '加载失败',
+    added: '已添加', updated: '已更新', deleted: '已删除', saving: '保存中…',
+    modal_video_add: '添加视频', modal_video_edit: '编辑视频',
+    modal_banner_add: '新增 Banner', modal_banner_edit: '编辑 Banner',
   },
   en: {
     nav_home: 'Home', nav_admin: 'Admin',
@@ -82,6 +94,18 @@ const I18N = {
     confirm_pwd: 'Confirm new password', pwd_mismatch: 'New passwords do not match',
     pwd_short: 'New password must be at least 6 characters', pwd_changed: 'Password changed',
     all_categories: 'All categories',
+    src_local: 'Local', src_url: 'URL',
+    st_active: 'Active', st_inactive: 'Inactive',
+    media_image: '🖼 Image', media_gif: '🎞 GIF', media_video: '🎬 Video',
+    uploading: '⏳ Uploading, large files take a while, do not close…',
+    uploading_batch: '⏳ Batch uploading, please wait…',
+    confirm_del_video: 'Delete "{x}"?', confirm_del_cat: 'Delete "{x}"? Its videos will become uncategorized.',
+    confirm_del_banner: 'Delete this banner?',
+    session_expired: 'Session expired, please sign in again',
+    load_error: 'Load failed',
+    added: 'Added', updated: 'Updated', deleted: 'Deleted', saving: 'Saving…',
+    modal_video_add: 'Add Video', modal_video_edit: 'Edit Video',
+    modal_banner_add: 'Add Banner', modal_banner_edit: 'Edit Banner',
   },
   th: {
     nav_home: 'หน้าแรก', nav_admin: 'จัดการ',
@@ -113,6 +137,18 @@ const I18N = {
     confirm_pwd: 'ยืนยันรหัสผ่านใหม่', pwd_mismatch: 'รหัสผ่านใหม่ไม่ตรงกัน',
     pwd_short: 'รหัสผ่านใหม่อย่างน้อย 6 ตัว', pwd_changed: 'เปลี่ยนรหัสผ่านแล้ว',
     all_categories: 'ทุกหมวดหมู่',
+    src_local: 'ในเครื่อง', src_url: 'URL',
+    st_active: 'เปิด', st_inactive: 'ปิด',
+    media_image: '🖼 รูปภาพ', media_gif: '🎞 GIF', media_video: '🎬 วิดีโอ',
+    uploading: '⏳ กำลังอัปโหลด ไฟล์ใหญ่ใช้เวลาสักครู่ อย่าปิด…',
+    uploading_batch: '⏳ กำลังอัปโหลดหลายไฟล์ โปรดรอ…',
+    confirm_del_video: 'ลบ "{x}" หรือไม่?', confirm_del_cat: 'ลบ "{x}"? วิดีโอในหมวดนี้จะไม่มีหมวดหมู่',
+    confirm_del_banner: 'ลบแบนเนอร์นี้?',
+    session_expired: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
+    load_error: 'โหลดล้มเหลว',
+    added: 'เพิ่มแล้ว', updated: 'อัปเดตแล้ว', deleted: 'ลบแล้ว', saving: 'กำลังบันทึก…',
+    modal_video_add: 'เพิ่มวิดีโอ', modal_video_edit: 'แก้ไขวิดีโอ',
+    modal_banner_add: 'เพิ่มแบนเนอร์', modal_banner_edit: 'แก้ไขแบนเนอร์',
   },
   id: {
     nav_home: 'Beranda', nav_admin: 'Admin',
@@ -144,6 +180,18 @@ const I18N = {
     confirm_pwd: 'Konfirmasi kata sandi baru', pwd_mismatch: 'Kata sandi baru tidak cocok',
     pwd_short: 'Kata sandi baru minimal 6 karakter', pwd_changed: 'Kata sandi diubah',
     all_categories: 'Semua kategori',
+    src_local: 'Lokal', src_url: 'URL',
+    st_active: 'Aktif', st_inactive: 'Nonaktif',
+    media_image: '🖼 Gambar', media_gif: '🎞 GIF', media_video: '🎬 Video',
+    uploading: '⏳ Mengunggah, file besar butuh waktu, jangan tutup…',
+    uploading_batch: '⏳ Mengunggah massal, harap tunggu…',
+    confirm_del_video: 'Hapus "{x}"?', confirm_del_cat: 'Hapus "{x}"? Video di kategori ini jadi tanpa kategori.',
+    confirm_del_banner: 'Hapus banner ini?',
+    session_expired: 'Sesi berakhir, silakan masuk kembali',
+    load_error: 'Gagal memuat',
+    added: 'Ditambahkan', updated: 'Diperbarui', deleted: 'Dihapus', saving: 'Menyimpan…',
+    modal_video_add: 'Tambah Video', modal_video_edit: 'Ubah Video',
+    modal_banner_add: 'Tambah Banner', modal_banner_edit: 'Ubah Banner',
   },
 };
 
@@ -170,6 +218,18 @@ export function setLang(lang) {
 export function t(key) {
   const lang = getLang();
   return (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key;
+}
+
+/** 带占位符插值的翻译，如 t2('confirm_del_video', {x: title}) → 替换 {x} */
+export function t2(key, vars = {}) {
+  return t(key).replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : `{${k}}`));
+}
+
+/** URL 安全过滤：只允许 http(s):// 或 / 开头，否则返回 ''（防 javascript: 等 XSS） */
+export function safeUrl(u) {
+  if (!u) return '';
+  const s = String(u).trim();
+  return /^(https?:\/\/|\/)/i.test(s) ? s : '';
 }
 
 /**

@@ -89,7 +89,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
 import { api, isLoggedIn } from './js/api.js';
-import { applyI18n, setRuntimeLang, t } from './js/main.js';
+import { applyI18n, setRuntimeLang, t, safeUrl } from './js/main.js';
 
 // 前台首页固定使用印尼语（Bahasa Indonesia），无语言切换按钮
 setRuntimeLang('id');
@@ -197,12 +197,16 @@ async function loadBanners() {
       document.getElementById(wrapId).style.display = '';
       const slidesEl = document.getElementById(slidesId);
       slidesEl.innerHTML = items.map(b => {
+        // URL 过滤：挡掉 javascript: 等不安全协议
+        const src  = safeUrl(b.image_url);
+        const link = safeUrl(b.link_url);
+        if (!src) return '';   // 无有效媒体地址则跳过该 slide
         // 支持 image / gif（均用 img）/ video（用 video 标签自动播放）
         const media = b.media_type === 'video'
-          ? `<video src="${b.image_url}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
-          : `<img src="${b.image_url}" alt="${b.title || ''}" style="width:100%;height:100%;object-fit:cover;">`;
+          ? `<video src="${src}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+          : `<img src="${src}" alt="${b.title || ''}" style="width:100%;height:100%;object-fit:cover;">`;
         return `<div class="swiper-slide">
-          <a href="${b.link_url || '#'}" ${b.link_url && b.link_url !== '#' ? 'target="_blank" rel="noopener"' : ''}>
+          <a href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>
             ${media}
           </a>
         </div>`;
