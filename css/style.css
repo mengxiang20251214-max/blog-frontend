@@ -269,9 +269,10 @@ select.input { cursor: pointer; }
 
 /* ── 视频网格 ────────────────────────────────────────────────────────────── */
 .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1.25rem; }
+/* 所有弹性列统一用 minmax(0,1fr)，把轨道最小值钉死为 0，防止内容撑爆轨道 */
 .video-card {
   background: var(--card); border-radius: var(--radius);
-  overflow: hidden; border: 1px solid var(--border);
+  overflow: hidden; border: 1px solid var(--border); min-width: 0;
   transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
 }
 .video-card:hover {
@@ -279,8 +280,10 @@ select.input { cursor: pointer; }
   box-shadow: var(--shadow-hov);
   border-color: rgba(124,108,255,.45);
 }
-.card-thumb { aspect-ratio: 16/9; overflow: hidden; position: relative; background: var(--bg3); }
-.card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+.card-thumb { aspect-ratio: 16/9; overflow: hidden; position: relative; width: 100%; background: var(--bg3); }
+/* img 绝对定位：脱离文档流，不参与 min-content 计算，彻底杜绝
+   「aspect-ratio + 图片 height:100% + 单列 1fr 栅格」的循环尺寸爆炸（移动端整页错乱根因） */
+.card-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
 .video-card:hover .card-thumb img { transform: scale(1.07); }
 .card-play {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -448,7 +451,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
 }
 /* 中屏：折叠为单列。手机端同样显示左右广告——左广告置顶、右广告+按钮在内容后 */
 @media (max-width: 980px) {
-  .home, .home.has-left, .home.has-right, .home.has-left.has-right { grid-template-columns: 1fr; }
+  .home, .home.has-left, .home.has-right, .home.has-left.has-right { grid-template-columns: minmax(0, 1fr); }
   .home-aside { position: static; flex-direction: column; gap: .85rem; }
   /* 不再用 order 把广告挤到最底部：自然顺序 = 左广告 → 视频 → 右广告 */
   .side-card { flex: 1 1 100%; }
@@ -462,7 +465,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .app-btn-group + .app-btn-group { border-top: none; margin-top: .6rem; padding-top: 0; }
 }
 @media (max-width: 768px) {
-  .video-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
   .stat-grid { grid-template-columns: 1fr; }
   .admin-sidebar { width: 58px; }
   .admin-sidebar .side-link span { display: none; }
@@ -471,6 +474,11 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   /* 视频详情页：减小内边距，播放器限高，避免在小屏上过大 */
   .page-layout { padding: 1rem .85rem; }
   .player-wrap iframe, .player-wrap video, .player-wrap .plyr { max-height: 56vh; }
+  /* 触摸友好：交互元素加大点击区域（≥40px），字号不小于 13px */
+  .chip { padding: .5rem 1rem; }
+  .page-btn { min-height: 40px; display: inline-flex; align-items: center; }
+  .nav-link { padding: .5rem .7rem; }
+  .card-title { font-size: .875rem; }
 }
 @media (max-width: 640px) {
   .navbar-inner { gap: .6rem; padding: 0 1rem; }
@@ -482,7 +490,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .filter-row::-webkit-scrollbar { display: none; }
 }
 @media (max-width: 460px) {
-  .video-grid { grid-template-columns: 1fr; }
+  .video-grid { grid-template-columns: minmax(0, 1fr); }
   .side-actions { flex-direction: column; }
   .sidebar-banner { height: 140px; }
   /* 极窄屏：下载/客服按钮各自独占一行，文字不挤 */
