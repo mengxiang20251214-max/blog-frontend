@@ -241,5 +241,57 @@ export const api = {
     runBackup() { return authReq('/api/admin/backup', { method: 'POST' }); },
     /** 备份列表 */
     listBackups() { return authReq('/api/admin/backups'); },
+
+    // -- 分片上传（任意大小视频） --
+    /**
+     * 分片上传一个视频文件，支持任意大小。
+     *   file      : File 对象
+     *   fields    : { title, cover_url, description, category_id }
+     *   onProgress: (percent:0-100) => void
+     * 特性：5MB/片、并发 3、单片失败自动重试 3 次、进度回调。
+     * 返回 complete 的结果（含新建 video）。
+     */
+    async uploadVideoChunked(file, fields = {}, onProgress) {
+      const CHUNK = 5 * 1024 * 1024;
+      const total = Math.max(1, Math.ceil(file.size / CHUNK));
+
+      // 1) init
+      const initFd = new FormData();
+      initFd.append('filename', file.name);
+      initFd.append('total_chunks', total);
+      initFd.append('total_size', file.size);
+      const { upload_id } = await authReq('/api/upload/init', { method: 'POST', body: initFd });
+
+      // 2) 上传分片：并发池 3 + 失败重试 3
+      const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+      let done = 0;
+      const sendChunk = async (i, attempt = 1) => {
+        const blob = file.slice(i * CHUNK, i * CHUNK + CHUNK);
+        const fd = new FormData();
+        fd.append('upload_id', upload_id);
+        fd.append('chunk_index', i);
+        fd.append('chunk', blob, 'chunk');
+        try {
+          await authReq('/api/upload/chunk', { method: 'POST', body: fd });
+        } catch (e) {
+          if (attempt < 3) { await sleep(500 * attempt); return sendChunk(i, attempt + 1); }
+          throw new Error(`分片 ${i + 1}/${total} 上传失败：${e.message}`);
+        }
+        done++;
+        if (onProgress) onProgress(Math.round(done * 100 / total));
+      };
+      let cursor = 0;
+      const worker = async () => { while (cursor < total) { await sendChunk(cursor++); } };
+      await Promise.all(Array.from({ length: Math.min(3, total) }, worker));
+
+      // 3) complete：合并 → 落库 → 建记录
+      const compFd = new FormData();
+      compFd.append('upload_id', upload_id);
+      compFd.append('title',       fields.title       || '');
+      compFd.append('cover_url',   fields.cover_url   || '');
+      compFd.append('description', fields.description || '');
+      compFd.append('category_id', fields.category_id || '');
+      return authReq('/api/upload/complete', { method: 'POST', body: compFd });
+    },
   },
 };
