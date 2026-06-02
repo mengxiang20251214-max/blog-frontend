@@ -235,5 +235,11 @@ export const api = {
         method: 'POST', body: { old_password, new_password },
       });
     },
+
+    // -- 数据库备份 --
+    /** 手动触发一次数据库备份（导出→上传 R2→清理旧备份） */
+    runBackup() { return authReq('/api/admin/backup', { method: 'POST' }); },
+    /** 备份列表 */
+    listBackups() { return authReq('/api/admin/backups'); },
   },
 };

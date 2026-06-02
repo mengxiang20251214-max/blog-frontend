@@ -66,6 +66,9 @@ const I18N = {
     cover_regen: '重提封面', cover_backfill: '补全封面', cover_done: '封面已更新',
     cover_fail: '封面提取失败', cover_scheduled: '已排入封面任务：{x} 个',
     uploading_banner: '⏳ 正在上传媒体，请稍候…', no_pending_cover: '没有需要补封面的视频',
+    backup_title: '数据库备份', backup_now: '立即备份', backup_running: '备份中…',
+    backup_done: '备份成功', backup_empty: '暂无备份', th_size: '大小', backup_download: '下载',
+    backup_hint: '每天 02:00 自动备份到 R2，保留最近 30 天（需在 Railway 设 BACKUP_ENABLED=true）',
   },
   en: {
     nav_home: 'Home', nav_admin: 'Admin',
@@ -112,6 +115,9 @@ const I18N = {
     cover_regen: 'Regen cover', cover_backfill: 'Backfill covers', cover_done: 'Cover updated',
     cover_fail: 'Cover extraction failed', cover_scheduled: 'Queued {x} cover job(s)',
     uploading_banner: '⏳ Uploading media, please wait…', no_pending_cover: 'No videos need a cover',
+    backup_title: 'Database Backup', backup_now: 'Backup now', backup_running: 'Backing up…',
+    backup_done: 'Backup done', backup_empty: 'No backups yet', th_size: 'Size', backup_download: 'Download',
+    backup_hint: 'Auto-backup daily 02:00 to R2, last 30 days kept (set BACKUP_ENABLED=true on Railway)',
   },
   th: {
     nav_home: 'หน้าแรก', nav_admin: 'จัดการ',
@@ -158,6 +164,9 @@ const I18N = {
     cover_regen: 'สร้างปกใหม่', cover_backfill: 'เติมปก', cover_done: 'อัปเดตปกแล้ว',
     cover_fail: 'สร้างปกล้มเหลว', cover_scheduled: 'เข้าคิวสร้างปก {x} รายการ',
     uploading_banner: '⏳ กำลังอัปโหลดสื่อ โปรดรอ…', no_pending_cover: 'ไม่มีวิดีโอที่ต้องใส่ปก',
+    backup_title: 'สำรองฐานข้อมูล', backup_now: 'สำรองทันที', backup_running: 'กำลังสำรอง…',
+    backup_done: 'สำรองสำเร็จ', backup_empty: 'ยังไม่มีข้อมูลสำรอง', th_size: 'ขนาด', backup_download: 'ดาวน์โหลด',
+    backup_hint: 'สำรองอัตโนมัติทุกวัน 02:00 ไป R2 เก็บ 30 วัน (ตั้ง BACKUP_ENABLED=true บน Railway)',
   },
   id: {
     nav_home: 'Beranda', nav_admin: 'Admin',
@@ -204,6 +213,9 @@ const I18N = {
     cover_regen: 'Buat sampul', cover_backfill: 'Lengkapi sampul', cover_done: 'Sampul diperbarui',
     cover_fail: 'Ekstraksi sampul gagal', cover_scheduled: '{x} tugas sampul diantrekan',
     uploading_banner: '⏳ Mengunggah media, harap tunggu…', no_pending_cover: 'Tak ada video tanpa sampul',
+    backup_title: 'Cadangan Basis Data', backup_now: 'Cadangkan sekarang', backup_running: 'Mencadangkan…',
+    backup_done: 'Cadangan selesai', backup_empty: 'Belum ada cadangan', th_size: 'Ukuran', backup_download: 'Unduh',
+    backup_hint: 'Cadangan otomatis harian 02:00 ke R2, simpan 30 hari (set BACKUP_ENABLED=true di Railway)',
   },
 };
 

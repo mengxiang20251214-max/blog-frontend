@@ -200,6 +200,21 @@
               <button class="btn btn-primary" onclick="changePassword()" style="align-self:flex-start;" data-i18n="change_pwd">修改密码</button>
             </div>
           </div>
+
+          <!-- 数据库备份 -->
+          <div class="table-wrap" style="margin-top:1.25rem;">
+            <div class="table-header">
+              <span style="font-weight:600;font-size:.875rem;" data-i18n="backup_title">数据库备份</span>
+              <button class="btn btn-primary btn-sm" id="backupNowBtn" onclick="runBackup()" data-i18n="backup_now">立即备份</button>
+            </div>
+            <div style="padding:1rem 1.25rem;">
+              <p class="text-muted text-xs" style="margin-bottom:.75rem;" data-i18n="backup_hint">每天 02:00 自动备份到 R2，保留最近 30 天</p>
+              <table><thead><tr>
+                <th data-i18n="th_title">文件</th><th data-i18n="th_time">时间</th>
+                <th data-i18n="th_size">大小</th><th style="text-align:right;" data-i18n="th_actions">操作</th>
+              </tr></thead><tbody id="backupTableBody"></tbody></table>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -305,7 +320,7 @@
 
 <script type="module">
 import { api, isLoggedIn, clearToken, mediaUrl } from './js/api.js';
-import { applyI18n, setLang, getLang, t, t2, LANG_LABELS, SUPPORTED_LANGS } from './js/main.js';
+import { applyI18n, setLang, getLang, t, t2, fmtBytes, LANG_LABELS, SUPPORTED_LANGS } from './js/main.js';
 
 // 通用：给表格 tbody 显示 loading / 错误行（Item 5）
 function tbodyLoading(id, cols) {
@@ -828,7 +843,39 @@ async function loadSettings() {
     document.getElementById('setKeys').value   = s.site_keywords    || '';
     document.getElementById('setFooter').value = s.footer_text      || '';
   } catch { }
+  loadBackups();
 }
+
+// ── 数据库备份 ────────────────────────────────────────────────────────────────
+async function loadBackups() {
+  const tbody = document.getElementById('backupTableBody');
+  try {
+    const { items = [] } = await api.admin.listBackups();
+    tbody.innerHTML = items.map(b => `
+      <tr>
+        <td class="text-xs" style="font-family:monospace;">${b.file}</td>
+        <td class="text-muted text-xs">${b.created_at || '—'}</td>
+        <td class="text-muted text-xs">${fmtBytes(b.size)}</td>
+        <td style="text-align:right;">
+          <a class="btn btn-outline btn-sm" href="${b.url}" target="_blank" rel="noopener" data-i18n="backup_download">下载</a>
+        </td>
+      </tr>`).join('') ||
+      `<tr><td colspan="4" class="text-muted" style="text-align:center;padding:1.5rem;">${t('backup_empty')}</td></tr>`;
+    applyI18n(tbody);
+  } catch (e) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:#ef4444;">${e.message}</td></tr>`; }
+}
+
+window.runBackup = async function() {
+  const btn = document.getElementById('backupNowBtn');
+  const old = btn.textContent;
+  btn.disabled = true; btn.textContent = t('backup_running');
+  try {
+    const res = await api.admin.runBackup();
+    toast(`${t('backup_done')}：${res.file} (${fmtBytes(res.size)})`, 'success');
+    loadBackups();
+  } catch (e) { toast(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = old; }
+};
 
 window.saveSettings = async function() {
   try {
