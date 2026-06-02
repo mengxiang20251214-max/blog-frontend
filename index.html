@@ -9,6 +9,9 @@
 </head>
 <body>
 
+<!-- 背景光晕（紫黑金氛围） -->
+<div class="bg-aurora" aria-hidden="true"></div>
+
 <!-- 导航栏 -->
 <nav class="navbar">
   <div class="navbar-inner">
@@ -28,7 +31,7 @@
            aria-label="搜索视频" data-i18n-title="search_ph">
     </div>
     <div class="navbar-links">
-      <a href="index.html" class="nav-link" data-i18n="nav_home">首页</a>
+      <a href="index.html" class="nav-link active" data-i18n="nav_home">首页</a>
       <!-- 仅已登录的管理员可见，匿名访客看不到此入口 -->
       <a href="admin.html" id="adminLink" class="nav-link" style="display:none;" data-i18n="nav_admin">管理</a>
     </div>
@@ -36,34 +39,38 @@
 </nav>
 
 <!-- 顶部 Banner -->
-<div id="bannerTop" class="banner-top" style="display:none;">
-  <div class="swiper swiper-top">
-    <div class="swiper-wrapper" id="bannerTopSlides"></div>
-    <div class="swiper-pagination swiper-pagination-top"></div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-button-next"></div>
+<div class="band-wrap">
+  <div id="bannerTop" class="banner-top" style="display:none;">
+    <div class="swiper swiper-top">
+      <div class="swiper-wrapper" id="bannerTopSlides"></div>
+      <div class="swiper-pagination swiper-pagination-top"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    </div>
   </div>
 </div>
 
 <!-- 三栏布局 -->
-<div class="page-layout">
+<div class="home">
   <!-- 左侧 Banner -->
-  <aside class="sidebar" id="leftSidebar" style="display:none;">
-    <div class="swiper sidebar-banner swiper-left" style="height:340px;">
-      <div class="swiper-wrapper" id="bannerLeftSlides"></div>
-      <div class="swiper-pagination swiper-pagination-left"></div>
+  <aside class="home-aside" id="leftSidebar" style="display:none;">
+    <div class="side-card">
+      <div class="swiper sidebar-banner swiper-left">
+        <div class="swiper-wrapper" id="bannerLeftSlides"></div>
+        <div class="swiper-pagination swiper-pagination-left"></div>
+      </div>
     </div>
   </aside>
 
   <!-- 主内容 -->
-  <main class="page-main">
+  <main class="home-main">
     <!-- 分类筛选栏（动态填充；后端按 category_id 过滤） -->
     <div id="catFilter" class="filter-row" role="tablist" aria-label="分类筛选"></div>
 
     <!-- 标题行 -->
-    <div class="flex items-center justify-between" style="margin-bottom:.75rem;">
-      <h2 id="sectionTitle" style="font-size:.9375rem; font-weight:600;">最新视频</h2>
-      <span id="totalCount" class="text-muted text-xs"></span>
+    <div class="section-head">
+      <h2 id="sectionTitle" class="section-title">最新视频</h2>
+      <span id="totalCount" class="section-count text-muted"></span>
     </div>
 
     <!-- 视频网格 -->
@@ -75,13 +82,41 @@
     <div id="pagination" class="pagination"></div>
   </main>
 
-  <!-- 右侧 Banner -->
-  <aside class="sidebar" id="rightSidebar" style="display:none;">
-    <div class="swiper sidebar-banner swiper-right" style="height:340px;">
-      <div class="swiper-wrapper" id="bannerRightSlides"></div>
-      <div class="swiper-pagination swiper-pagination-right"></div>
+  <!-- 右侧：Banner + 固定操作按钮 -->
+  <aside class="home-aside" id="rightSidebar" style="display:none;">
+    <div class="side-card" id="rightBannerBox" style="display:none;">
+      <div class="swiper sidebar-banner swiper-right">
+        <div class="swiper-wrapper" id="bannerRightSlides"></div>
+        <div class="swiper-pagination swiper-pagination-right"></div>
+      </div>
+    </div>
+
+    <!-- 固定操作区 -->
+    <div class="side-actions" id="sideActions" style="display:none;">
+      <a class="action-btn action-download" id="btnDownload" target="_blank" rel="noopener" style="display:none;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+        </svg>
+        <span data-i18n="download_app">下载 APP</span>
+      </a>
+      <a class="action-btn action-contact" id="btnContact" target="_blank" rel="noopener" style="display:none;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+        </svg>
+        <span data-i18n="contact_us">联系客服</span>
+      </a>
     </div>
   </aside>
+</div>
+
+<!-- 底部全宽推广 Banner -->
+<div class="band-wrap">
+  <div id="bannerBottom" class="banner-bottom" style="display:none;">
+    <div class="swiper swiper-bottom">
+      <div class="swiper-wrapper" id="bannerBottomSlides"></div>
+      <div class="swiper-pagination swiper-pagination-bottom"></div>
+    </div>
+  </div>
 </div>
 
 <!-- 页脚 -->
@@ -142,12 +177,12 @@ function videoCard(v) {
         </svg>
       </div></div>
       ${v.category_name ? `<span class="card-cat">${esc(v.category_name)}</span>` : ''}
+      <span class="card-views"><svg width="11" height="11" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg> ${v.views}</span>
     </div>
     <div class="card-body">
       <div class="card-title">${esc(v.title)}</div>
       <div class="card-meta">
-        <span>▶ ${v.views}</span>
-        <span>${esc(v.created_at || '')}</span>
+        <span class="card-date">${esc(v.created_at || '')}</span>
       </div>
     </div>
   </a>`;
@@ -201,7 +236,7 @@ function renderPagination() {
   if (state.page < state.totalPages) html += `<button class="page-btn" onclick="goPage(${state.page + 1})">${t('next')}</button>`;
   el.innerHTML = html;
 }
-window.goPage = (p) => { state.page = p; loadVideos(); window.scrollTo(0, 0); };
+window.goPage = (p) => { state.page = p; loadVideos(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
 // ── Banner ────────────────────────────────────────────────────────────────
 async function loadBanners() {
@@ -210,7 +245,7 @@ async function loadBanners() {
 
     function fill(position, slidesId, wrapId, swiperClass, paginationClass) {
       const items = data[position] || [];
-      if (!items.length) return;
+      if (!items.length) return false;
       document.getElementById(wrapId).style.display = '';
       const slidesEl = document.getElementById(slidesId);
       slidesEl.innerHTML = items.map(b => {
@@ -220,14 +255,15 @@ async function loadBanners() {
         if (!src) return '';   // 无有效媒体地址则跳过该 slide
         // 支持 image / gif（均用 img）/ video（用 video 标签自动播放）
         const media = b.media_type === 'video'
-          ? `<video src="${src}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
-          : `<img src="${src}" alt="${b.title || ''}" style="width:100%;height:100%;object-fit:cover;">`;
+          ? `<video src="${src}" autoplay muted loop playsinline></video>`
+          : `<img src="${src}" alt="${esc(b.title || '')}" loading="lazy">`;
         return `<div class="swiper-slide">
           <a href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>
             ${media}
           </a>
         </div>`;
       }).join('');
+      const horizontal = position === 'top' || position === 'bottom';
       new Swiper(`.${swiperClass}`, {
         loop: items.length > 1,
         autoplay: items.length > 1 ? { delay: items[0].duration || 4000, disableOnInteraction: false } : false,
@@ -237,12 +273,25 @@ async function loadBanners() {
         navigation: position === 'top' ? { prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' } : false,
         speed: 500,
       });
+      return true;
     }
 
-    fill('top',   'bannerTopSlides',   'bannerTop',    'swiper-top',   'swiper-pagination-top');
-    fill('left',  'bannerLeftSlides',  'leftSidebar',  'swiper-left',  'swiper-pagination-left');
-    fill('right', 'bannerRightSlides', 'rightSidebar', 'swiper-right', 'swiper-pagination-right');
+    fill('top',    'bannerTopSlides',    'bannerTop',      'swiper-top',    'swiper-pagination-top');
+    const hasLeft = fill('left', 'bannerLeftSlides', 'leftSidebar', 'swiper-left', 'swiper-pagination-left');
+    document.querySelector('.home').classList.toggle('has-left', hasLeft);
+    fill('right',  'bannerRightSlides',  'rightBannerBox', 'swiper-right',  'swiper-pagination-right');
+    fill('bottom', 'bannerBottomSlides', 'bannerBottom',   'swiper-bottom', 'swiper-pagination-bottom');
+    refreshRightAside();
   } catch { }
+}
+
+// 右侧栏只要有「Banner 或操作按钮」之一就显示；并据此切换网格列数
+function refreshRightAside() {
+  const hasBanner  = document.getElementById('rightBannerBox').style.display !== 'none';
+  const hasActions = document.getElementById('sideActions').style.display !== 'none';
+  const show = hasBanner || hasActions;
+  document.getElementById('rightSidebar').style.display = show ? '' : 'none';
+  document.querySelector('.home').classList.toggle('has-right', show);
 }
 
 // ── 分类筛选 ──────────────────────────────────────────────────────────────
@@ -291,7 +340,7 @@ document.getElementById('searchInput').addEventListener('input', e => {
   }, 400);
 });
 
-// ── 网站设置 ──────────────────────────────────────────────────────────────
+// ── 网站设置 + 右侧操作按钮 ────────────────────────────────────────────────
 async function loadSettings() {
   try {
     const s = await api.settings();
@@ -300,7 +349,16 @@ async function loadSettings() {
       document.title = s.site_name;
     }
     if (s.footer_text) document.getElementById('footer').textContent = s.footer_text;
+
+    // 「下载 APP / 联系客服」按钮：链接来自环境变量，未配置则不显示该按钮
+    let anyAction = false;
+    const dl = safeUrl(s.app_download_url);
+    const ct = safeUrl(s.contact_url);
+    if (dl) { const b = document.getElementById('btnDownload'); b.href = dl; b.style.display = ''; anyAction = true; }
+    if (ct) { const b = document.getElementById('btnContact');  b.href = ct; b.style.display = ''; anyAction = true; }
+    if (anyAction) document.getElementById('sideActions').style.display = '';
   } catch { }
+  refreshRightAside();
 }
 
 // ── 初始化 ────────────────────────────────────────────────────────────────
