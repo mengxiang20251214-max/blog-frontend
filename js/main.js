@@ -318,3 +318,57 @@ export function showToast(msg, type = 'info', stackId = 'toastStack') {
 export function qs(key) {
   return new URLSearchParams(location.search).get(key);
 }
+
+// ── 右侧「下载 APP / 联系客服」按钮渲染 ──────────────────────────────────────
+// 数据来自后端 settings 的 download_apps[] / contacts[]（每项 {name, url}）。
+// 按链接/名称自动识别平台 → 配色 + 品牌图标：
+//   下载：紫色（Google Play ▶ / App Store apple 图标）
+//   客服：WhatsApp 绿 / Telegram 蓝 / 其它默认紫
+const _ICONS = {
+  download: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>',
+  apple: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.36 1.43c0 1.14-.42 2.2-1.12 3.02-.84.99-2.2 1.76-3.36 1.67-.14-1.13.43-2.32 1.08-3.06.74-.85 2.06-1.5 3.4-1.63zM20.5 17.06c-.6 1.38-.9 2-1.67 3.22-1.08 1.7-2.6 3.82-4.48 3.83-1.67.02-2.1-1.1-4.37-1.08-2.27.01-2.74 1.1-4.4 1.08-1.89-.02-3.33-1.93-4.4-3.63C-1.2 16.4-1.5 10.9.95 7.97 2.06 6.6 3.74 5.74 5.32 5.74c1.6 0 2.6 1.1 3.92 1.1 1.28 0 2.06-1.1 3.92-1.1 1.4 0 2.88.76 3.94 2.08-3.46 1.9-2.9 6.84.4 8.24z"/></svg>',
+  play: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3.6 2.2a1 1 0 00-.6.92v17.76a1 1 0 001.54.84l11-6.55-3.02-3.02L3.6 2.2zm14.9 8.05l-2.55 1.52-3.07-3.07 2.53-1.5 3.09 1.84c.9.54.9 1.86 0 2.4zM5.4 21.1l8.06-4.8-2.78-2.78L5.4 18.9v2.2z"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M.06 24l1.69-6.16A11.9 11.9 0 010 11.9C0 5.33 5.34 0 11.9 0c3.18 0 6.17 1.24 8.4 3.49a11.8 11.8 0 013.48 8.41c0 6.56-5.34 11.9-11.9 11.9-2.02 0-3.98-.51-5.7-1.45L.06 24zM6.6 20.13c1.68.99 3.28 1.58 5.3 1.58 5.45 0 9.9-4.43 9.9-9.88 0-5.46-4.44-9.9-9.9-9.9-5.45 0-9.88 4.44-9.88 9.9 0 2.13.62 3.72 1.66 5.4l-1 3.65 3.92-1.75zm11.3-5.6c-.07-.12-.27-.2-.56-.34-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.66.15-.2.3-.76.96-.93 1.16-.17.2-.34.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.34.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.66-1.6-.9-2.18-.24-.58-.48-.5-.66-.5l-.56-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.07 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.42.25-.7.25-1.28.18-1.4z"/></svg>',
+  telegram: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.05 1.58L1.93 9.36c-1.37.55-1.36 1.32-.25 1.66l5.16 1.61 1.99 6.1c.24.66.12.92.81.92.53 0 .77-.24 1.06-.53l2.55-2.48 5.3 3.92c.98.54 1.68.26 1.92-.9l3.48-16.4c.36-1.42-.53-2.07-1.45-1.68z"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>',
+};
+const _ARROW = '<svg class="app-btn__arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M9 7h8v8"/></svg>';
+
+function _btnStyle(kind, url, name) {
+  const s = `${url || ''} ${name || ''}`.toLowerCase();
+  if (kind === 'download') {
+    const icon = /apple|app ?store|itunes|ios/.test(s) ? _ICONS.apple
+               : /play\.google|google ?play|android|\.apk/.test(s) ? _ICONS.play
+               : _ICONS.download;
+    return { cls: 'app-btn--download', icon };
+  }
+  if (/wa\.me|whatsapp|chat\.whatsapp/.test(s)) return { cls: 'app-btn--whatsapp', icon: _ICONS.whatsapp };
+  if (/t\.me|telegram|tg:\/\//.test(s))          return { cls: 'app-btn--telegram', icon: _ICONS.telegram };
+  return { cls: 'app-btn--contact', icon: _ICONS.chat };
+}
+
+/**
+ * 渲染右侧下载/客服按钮到 root 容器。
+ * downloads / contacts 为 [{name,url}]；返回是否渲染了至少一个按钮。
+ */
+export function renderSideButtons(downloads, contacts, root) {
+  if (!root) return false;
+  const make = (item, kind) => {
+    const url = safeUrl(item && item.url);
+    if (!url) return '';
+    const { cls, icon } = _btnStyle(kind, item.url, item.name);
+    const label = esc(((item.name || '').trim()) || (kind === 'download' ? t('download_app') : t('contact_us')));
+    return `<a class="app-btn ${cls}" href="${esc(url)}" target="_blank" rel="noopener" title="${label}">
+      <span class="app-btn__icon">${icon}</span>
+      <span class="app-btn__text">${label}</span>
+      ${_ARROW}
+    </a>`;
+  };
+  const dl = (downloads || []).map(d => make(d, 'download')).filter(Boolean);
+  const ct = (contacts || []).map(c => make(c, 'contact')).filter(Boolean);
+  if (!dl.length && !ct.length) { root.innerHTML = ''; return false; }
+  root.innerHTML =
+    (dl.length ? `<div class="app-btn-group">${dl.join('')}</div>` : '') +
+    (ct.length ? `<div class="app-btn-group">${ct.join('')}</div>` : '');
+  return true;
+}

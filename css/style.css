@@ -214,6 +214,24 @@ select.input { cursor: pointer; }
 .action-download { background: var(--grad-gold); color: #1c1606; box-shadow: var(--shadow-gold); }
 .action-contact  { background: var(--grad); color: #fff; box-shadow: 0 8px 28px rgba(124,108,255,.3); }
 
+/* 右侧多按钮（2 下载 + 2 客服）—— 下载紫、WhatsApp 绿、Telegram 蓝 */
+.app-btn-group { display: flex; flex-direction: column; gap: .6rem; }
+.app-btn-group + .app-btn-group { margin-top: .85rem; padding-top: .85rem; border-top: 1px dashed var(--glass-border); }
+.app-btn {
+  display: flex; align-items: center; gap: .65rem; padding: .7rem .85rem;
+  border-radius: 14px; font-size: .875rem; font-weight: 700; color: #fff;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.app-btn__icon { display: flex; width: 30px; height: 30px; border-radius: 9px; align-items: center; justify-content: center; background: rgba(255,255,255,.2); flex-shrink: 0; }
+.app-btn__text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app-btn__arrow { opacity: .65; flex-shrink: 0; transition: transform .18s ease; }
+.app-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.app-btn:hover .app-btn__arrow { transform: translate(2px, -2px); opacity: 1; }
+.app-btn--download { background: linear-gradient(135deg, #7c6cff, #5b8cff); box-shadow: 0 8px 22px rgba(124,108,255,.34); }
+.app-btn--whatsapp { background: linear-gradient(135deg, #25d366, #128c4b); box-shadow: 0 8px 22px rgba(37,211,102,.3); }
+.app-btn--telegram { background: linear-gradient(135deg, #2aabee, #1c8fd1); box-shadow: 0 8px 22px rgba(42,171,238,.3); }
+.app-btn--contact  { background: var(--grad); box-shadow: 0 8px 22px rgba(124,108,255,.3); }
+
 /* ── 区块标题 ────────────────────────────────────────────────────────────── */
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
 .section-title { font-size: 1.05rem; font-weight: 700; position: relative; padding-left: .75rem; }
@@ -429,8 +447,13 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .home-main { order: -1; }
   .side-card { flex: 1 1 100%; }
   .sidebar-banner { height: 200px; }
-  .side-actions { flex-direction: row; flex: 1 1 100%; }
+  /* 旧单按钮版（保留兼容） */
+  .side-actions { flex: 1 1 100%; flex-direction: column; }
   .action-btn { flex: 1; }
+  /* 新多按钮版：每组横向铺成一排（下载1|下载2 / 客服1|客服2） */
+  .app-btn-group { flex-direction: row; }
+  .app-btn { flex: 1; min-width: 0; }
+  .app-btn-group + .app-btn-group { border-top: none; margin-top: .6rem; padding-top: 0; }
 }
 @media (max-width: 768px) {
   .video-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }

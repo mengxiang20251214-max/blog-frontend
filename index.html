@@ -91,21 +91,8 @@
       </div>
     </div>
 
-    <!-- 固定操作区 -->
-    <div class="side-actions" id="sideActions" style="display:none;">
-      <a class="action-btn action-download" id="btnDownload" target="_blank" rel="noopener" style="display:none;">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
-        </svg>
-        <span data-i18n="download_app">下载 APP</span>
-      </a>
-      <a class="action-btn action-contact" id="btnContact" target="_blank" rel="noopener" style="display:none;">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-        </svg>
-        <span data-i18n="contact_us">联系客服</span>
-      </a>
-    </div>
+    <!-- 固定操作区：2 下载 + 2 客服，由 renderSideButtons 动态填充 -->
+    <div class="side-actions" id="sideActions" style="display:none;"></div>
   </aside>
 </div>
 
@@ -128,7 +115,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
 import { api, isLoggedIn, mediaUrl } from './js/api.js';
-import { applyI18n, setRuntimeLang, t, safeUrl, esc } from './js/main.js';
+import { applyI18n, setRuntimeLang, t, safeUrl, esc, renderSideButtons } from './js/main.js';
 
 // 前台首页固定使用印尼语（Bahasa Indonesia），无语言切换按钮
 setRuntimeLang('id');
@@ -350,13 +337,17 @@ async function loadSettings() {
     }
     if (s.footer_text) document.getElementById('footer').textContent = s.footer_text;
 
-    // 「下载 APP / 联系客服」按钮：链接来自环境变量，未配置则不显示该按钮
-    let anyAction = false;
-    const dl = safeUrl(s.app_download_url);
-    const ct = safeUrl(s.contact_url);
-    if (dl) { const b = document.getElementById('btnDownload'); b.href = dl; b.style.display = ''; anyAction = true; }
-    if (ct) { const b = document.getElementById('btnContact');  b.href = ct; b.style.display = ''; anyAction = true; }
-    if (anyAction) document.getElementById('sideActions').style.display = '';
+    // 右侧「下载 APP / 联系客服」按钮（各 2 个）：数组来自环境变量；
+    // 兼容旧单值字段（只配了 APP_DOWNLOAD_URL/CONTACT_URL 时也能显示）
+    const downloads = (s.download_apps && s.download_apps.length)
+      ? s.download_apps
+      : (s.app_download_url ? [{ name: '', url: s.app_download_url }] : []);
+    const contacts = (s.contacts && s.contacts.length)
+      ? s.contacts
+      : (s.contact_url ? [{ name: '', url: s.contact_url }] : []);
+    const box = document.getElementById('sideActions');
+    const hasActions = renderSideButtons(downloads, contacts, box);
+    box.style.display = hasActions ? '' : 'none';
   } catch { }
   refreshRightAside();
 }
