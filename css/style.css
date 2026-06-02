@@ -469,8 +469,14 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .stat-grid { grid-template-columns: 1fr; }
   .admin-sidebar { width: 58px; }
   .admin-sidebar .side-link span { display: none; }
+  /* 广告图片完整显示不裁剪：contain + 深色背景填补留白（横/竖/方图都完整可见）。
+     注：Swiper 已初始化，纯 CSS 改 height:auto 会打乱其布局，故保留固定高度仅换 object-fit。 */
   .banner-top .swiper-slide img, .banner-top .swiper-slide video,
-  .banner-bottom .swiper-slide img, .banner-bottom .swiper-slide video { height: 130px; }
+  .banner-bottom .swiper-slide img, .banner-bottom .swiper-slide video {
+    height: 130px; object-fit: contain; background: #0a0a0a;
+  }
+  .sidebar-banner { height: 200px; }                 /* 侧栏广告加高，竖/方图看得更清 */
+  .sidebar-banner img, .sidebar-banner video { object-fit: contain; background: #0a0a0a; }
   /* 视频详情页：减小内边距，播放器限高，避免在小屏上过大 */
   .page-layout { padding: 1rem .85rem; }
   .player-wrap iframe, .player-wrap video, .player-wrap .plyr { max-height: 56vh; }
@@ -492,7 +498,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
 @media (max-width: 460px) {
   .video-grid { grid-template-columns: minmax(0, 1fr); }
   .side-actions { flex-direction: column; }
-  .sidebar-banner { height: 140px; }
+  .sidebar-banner { height: 180px; }   /* 窄屏侧栏广告略降，contain 仍完整不裁剪 */
   /* 极窄屏：下载/客服按钮各自独占一行，文字不挤 */
   .app-btn-group { flex-direction: column; }
 }
