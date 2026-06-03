@@ -323,6 +323,60 @@ export function qs(key) {
   return new URLSearchParams(location.search).get(key);
 }
 
+// ── 交互动画初始化（页面加载逐个淡入 + 回到顶部按钮）──────────────────────────
+// 纯新增、自运行；keyframe + fill:both 让元素默认可见，JS 不跑也不会被隐藏（防白屏）。
+(function initInteractions() {
+  if (typeof document === 'undefined') return;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 回到顶部按钮（动态注入，靠 window 滚动显隐；后台 window 不滚动则自然不出现）
+  function setupBackToTop() {
+    if (document.querySelector('.to-top')) return;
+    const btn = document.createElement('button');
+    btn.className = 'to-top'; btn.type = 'button'; btn.setAttribute('aria-label', '返回顶部');
+    btn.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }));
+    document.body.appendChild(btn);
+    const onScroll = () => btn.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  // 逐个淡入：监听内容容器，新加入的卡片/标签/广告依次延迟 0.05s 淡入
+  const SEL = '.video-card:not(.skeleton-card), .tag, .side-cat, .dual-banner-item, .side-ad-item';
+  function targetsIn(node) {
+    if (node.nodeType !== 1) return [];
+    const out = [];
+    if (node.matches && node.matches(SEL)) out.push(node);
+    else if (node.closest) { const p = node.closest('.dual-banner-item'); if (p) out.push(p); }
+    if (node.querySelectorAll) out.push(...node.querySelectorAll(SEL));
+    return out;
+  }
+  function animate(els) {
+    let i = 0;
+    for (const el of els) {
+      if (el.__animed) continue;
+      el.__animed = true;
+      el.style.animationDelay = Math.min(i++ * 0.05, 0.5) + 's';
+      el.classList.add('anim-in');
+    }
+  }
+  function setupReveal() {
+    if (reduce) return;
+    if (!document.querySelector('.video-grid, .dual-banner')) return;   // 仅前台页面启用
+    const mo = new MutationObserver(muts => {
+      const batch = [];
+      for (const m of muts) for (const n of m.addedNodes) batch.push(...targetsIn(n));
+      if (batch.length) animate(batch);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function start() { try { setupBackToTop(); setupReveal(); } catch (_) {} }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
 // ── 右侧「下载 APP / 联系客服」按钮渲染 ──────────────────────────────────────
 // 数据来自后端 settings 的 download_apps[] / contacts[]（每项 {name, url}）。
 // 按链接/名称自动识别平台 → 配色 + 品牌图标：
