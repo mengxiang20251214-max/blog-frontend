@@ -553,7 +553,22 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   /* 双列 Banner → 单列全宽堆叠 */
   .dual-banner { grid-template-columns: 1fr; gap: 12px; padding: 1rem 1rem 0; }
   .dual-banner-item { aspect-ratio: 16 / 6; }
-  .layout { padding: 1rem; gap: 1.25rem; }
+  .layout { padding: 1rem; gap: 1rem; }
+  /* 手机版重排：热门分类栏置顶 → 视频 → 侧边广告 → 下载/客服按钮（底部）。
+     display:contents 让右侧栏各部件「升级」为 .layout 的直接网格子项，从而可单独 order 排序。 */
+  .layout-side { display: contents; }
+  #categories { display: none; }              /* 竖排分类列表隐藏：顶部热门栏 + 汉堡抽屉已覆盖分类入口 */
+  #hotTagsWidget { order: 1; }                /* 热门分类栏 → 视频之前 */
+  .layout-main   { order: 2; }                /* 双列视频卡片 */
+  #sideAdWidget  { order: 3; }                /* 侧边广告（视频之后，保留曝光） */
+  #sideActionsWidget { order: 5; }            /* 下载/客服按钮 → 底部 */
+  /* 热门分类栏改横向滚动，不换行 */
+  #hotTagsWidget .tag-cloud {
+    flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; padding-bottom: 2px;
+  }
+  #hotTagsWidget .tag-cloud::-webkit-scrollbar { display: none; }
+  #hotTagsWidget .tag { flex-shrink: 0; }     /* pill 不被压缩，超出则横向滚动 */
   .stat-grid { grid-template-columns: 1fr; }
   .admin-sidebar { width: 58px; }
   .admin-sidebar .side-link span { display: none; }
