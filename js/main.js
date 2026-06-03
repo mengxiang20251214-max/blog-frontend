@@ -23,6 +23,7 @@ const I18N = {
   zh: {
     nav_home: '首页', nav_admin: '管理',
     download_app: '下载 APP', contact_us: '联系客服', promo: '推广',
+    cat_title: '分类', hot_tags: '热门标签', about: '关于', menu: '菜单',
     search_ph: '搜索视频...',
     menu_country: '国家', menu_type: '类型', all: '全部',
     latest: '最新视频', unit_videos: '个视频',
@@ -74,6 +75,7 @@ const I18N = {
   en: {
     nav_home: 'Home', nav_admin: 'Admin',
     download_app: 'Download App', contact_us: 'Contact Us', promo: 'Promo',
+    cat_title: 'Categories', hot_tags: 'Hot Tags', about: 'About', menu: 'Menu',
     search_ph: 'Search videos...',
     menu_country: 'Country', menu_type: 'Type', all: 'All',
     latest: 'Latest Videos', unit_videos: 'videos',
@@ -124,6 +126,7 @@ const I18N = {
   th: {
     nav_home: 'หน้าแรก', nav_admin: 'จัดการ',
     download_app: 'ดาวน์โหลดแอป', contact_us: 'ติดต่อเรา', promo: 'โปรโมชัน',
+    cat_title: 'หมวดหมู่', hot_tags: 'แท็กยอดนิยม', about: 'เกี่ยวกับ', menu: 'เมนู',
     search_ph: 'ค้นหาวิดีโอ...',
     menu_country: 'ประเทศ', menu_type: 'ประเภท', all: 'ทั้งหมด',
     latest: 'วิดีโอล่าสุด', unit_videos: 'วิดีโอ',
@@ -174,6 +177,7 @@ const I18N = {
   id: {
     nav_home: 'Beranda', nav_admin: 'Admin',
     download_app: 'Unduh Aplikasi', contact_us: 'Hubungi Kami', promo: 'Promosi',
+    cat_title: 'Kategori', hot_tags: 'Tag Populer', about: 'Tentang', menu: 'Menu',
     search_ph: 'Cari video...',
     menu_country: 'Negara', menu_type: 'Jenis', all: 'Semua',
     latest: 'Video Terbaru', unit_videos: 'video',

@@ -9,12 +9,17 @@
 </head>
 <body>
 
-<!-- 背景光晕（紫黑金氛围） -->
 <div class="bg-aurora" aria-hidden="true"></div>
 
 <!-- 导航栏 -->
 <nav class="navbar">
   <div class="navbar-inner">
+    <!-- 汉堡菜单（移动端） -->
+    <button class="nav-hamburger" id="hamburger" aria-label="菜单" aria-expanded="false">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
     <a href="index.html" class="navbar-brand">
       <div class="brand-icon">
         <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
@@ -32,71 +37,70 @@
     </div>
     <div class="navbar-links">
       <a href="index.html" class="nav-link active" data-i18n="nav_home">首页</a>
-      <!-- 仅已登录的管理员可见，匿名访客看不到此入口 -->
       <a href="admin.html" id="adminLink" class="nav-link" style="display:none;" data-i18n="nav_admin">管理</a>
     </div>
   </div>
 </nav>
 
-<!-- 顶部 Banner -->
-<div class="band-wrap">
-  <div id="bannerTop" class="banner-top" style="display:none;">
-    <div class="swiper swiper-top">
-      <div class="swiper-wrapper" id="bannerTopSlides"></div>
-      <div class="swiper-pagination swiper-pagination-top"></div>
-      <div class="swiper-button-prev"></div>
-      <div class="swiper-button-next"></div>
-    </div>
+<!-- 侧滑抽屉（移动端汉堡菜单展开） -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span class="grad-text" style="font-weight:800;" data-i18n="menu">菜单</span>
+    <button class="btn-icon" id="drawerClose" aria-label="关闭">✕</button>
   </div>
+  <nav class="drawer-nav">
+    <a class="drawer-link" href="index.html" data-i18n="nav_home">首页</a>
+    <a class="drawer-link" href="#categories" id="drawerToCats" data-i18n="cat_title">分类</a>
+    <a class="drawer-link" href="#about" data-i18n="about">关于</a>
+    <a class="drawer-link" href="admin.html" data-i18n="nav_admin">管理</a>
+  </nav>
+  <div class="drawer-section-title" data-i18n="cat_title">分类</div>
+  <div class="drawer-cats" id="drawerCats"></div>
+</aside>
+
+<!-- 双列 Banner（顶部并排两个，复用 top 位置；手机端单列堆叠） -->
+<div class="dual-banner" id="dualBanner" style="display:none;">
+  <a class="dual-banner-item" id="dualBanner1" rel="noopener" style="display:none;"></a>
+  <a class="dual-banner-item" id="dualBanner2" rel="noopener" style="display:none;"></a>
 </div>
 
-<!-- 三栏布局 -->
-<div class="home">
-  <!-- 左侧 Banner -->
-  <aside class="home-aside" id="leftSidebar" style="display:none;">
-    <div class="side-card">
-      <div class="swiper sidebar-banner swiper-left">
-        <div class="swiper-wrapper" id="bannerLeftSlides"></div>
-        <div class="swiper-pagination swiper-pagination-left"></div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- 主内容 -->
-  <main class="home-main">
-    <!-- 分类筛选栏（动态填充；后端按 category_id 过滤） -->
-    <div id="catFilter" class="filter-row" role="tablist" aria-label="分类筛选"></div>
-
-    <!-- 标题行 -->
+<!-- 主布局：左内容瀑布流 + 右分类栏 -->
+<div class="layout">
+  <main class="layout-main">
     <div class="section-head">
       <h2 id="sectionTitle" class="section-title">最新视频</h2>
       <span id="totalCount" class="section-count text-muted"></span>
     </div>
-
-    <!-- 视频网格 -->
     <div id="videoGrid" class="video-grid">
       <div class="loader-wrap"><div class="spinner"></div></div>
     </div>
-
-    <!-- 分页 -->
     <div id="pagination" class="pagination"></div>
   </main>
 
-  <!-- 右侧：Banner + 固定操作按钮 -->
-  <aside class="home-aside" id="rightSidebar" style="display:none;">
-    <div class="side-card" id="rightBannerBox" style="display:none;">
-      <div class="swiper sidebar-banner swiper-right">
-        <div class="swiper-wrapper" id="bannerRightSlides"></div>
-        <div class="swiper-pagination swiper-pagination-right"></div>
-      </div>
-    </div>
-
-    <!-- 固定操作区：2 下载 + 2 客服，由 renderSideButtons 动态填充 -->
-    <div class="side-actions" id="sideActions" style="display:none;"></div>
+  <aside class="layout-side" id="layoutSide">
+    <!-- 分类列表 -->
+    <section class="side-widget" id="categories">
+      <h3 class="side-widget-title" data-i18n="cat_title">分类</h3>
+      <ul class="side-cats" id="sideCats"></ul>
+    </section>
+    <!-- 热门标签 -->
+    <section class="side-widget" id="hotTagsWidget" style="display:none;">
+      <h3 class="side-widget-title" data-i18n="hot_tags">热门标签</h3>
+      <div class="tag-cloud" id="hotTags"></div>
+    </section>
+    <!-- 侧边广告（复用 right 位置） -->
+    <section class="side-widget side-ad" id="sideAdWidget" style="display:none;">
+      <div id="sideAd"></div>
+    </section>
+    <!-- 下载 / 客服按钮 -->
+    <section class="side-widget" id="sideActionsWidget" style="display:none;">
+      <div class="side-actions" id="sideActions"></div>
+    </section>
   </aside>
 </div>
 
-<!-- 底部全宽推广 Banner -->
+<!-- 底部全宽推广 Banner（保留 bottom 位置） -->
 <div class="band-wrap">
   <div id="bannerBottom" class="banner-bottom" style="display:none;">
     <div class="swiper swiper-bottom">
@@ -106,22 +110,18 @@
   </div>
 </div>
 
-<!-- 页脚 -->
 <footer id="footer">© 2024 VideoHub Pro</footer>
-
-<!-- Toast 容器 -->
 <div class="toast-stack" id="toastStack"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
 import { api, isLoggedIn, mediaUrl } from './js/api.js';
 import { applyI18n, setRuntimeLang, t, safeUrl, esc, renderSideButtons } from './js/main.js';
+import { setupDrawer } from './js/menu.js';
 
-// 前台首页固定使用印尼语（Bahasa Indonesia），无语言切换按钮
 setRuntimeLang('id');
 applyI18n();
 
-// 「管理」入口仅对已登录管理员显示；匿名访客直接浏览，无需任何登录
 if (isLoggedIn()) {
   const adminLink = document.getElementById('adminLink');
   if (adminLink) adminLink.style.display = '';
@@ -129,8 +129,8 @@ if (isLoggedIn()) {
 
 // ── 状态 ──────────────────────────────────────────────────────────────────
 let state = { page: 1, sort: 'created_at', q: '', category_id: '', totalPages: 1 };
+let allCats = [];
 
-// 骨架屏：加载时先占位，避免「整页空白 → 突然跳出」的闪烁，提升感知速度
 const SKELETON = Array.from({ length: 12 }, () =>
   `<div class="video-card skeleton-card">
      <div class="skeleton card-thumb"></div>
@@ -140,7 +140,6 @@ const SKELETON = Array.from({ length: 12 }, () =>
      </div>
    </div>`).join('');
 
-// ── Toast ─────────────────────────────────────────────────────────────────
 function toast(msg, type = 'info') {
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
@@ -150,7 +149,6 @@ function toast(msg, type = 'info') {
 }
 
 // ── 视频卡片 ──────────────────────────────────────────────────────────────
-// 标题/分类名一律走 esc()，避免含 < > " 的数据破坏布局或注入脚本
 function videoCard(v) {
   const cover = mediaUrl(v.cover_url) || `https://picsum.photos/seed/${v.id}/640/360`;
   return `
@@ -179,17 +177,12 @@ function videoCard(v) {
 async function loadVideos() {
   const grid = document.getElementById('videoGrid');
   grid.innerHTML = SKELETON;
-
   try {
     const params = { page: state.page, page_size: 12, sort: state.sort };
     if (state.category_id) params.category_id = state.category_id;
-
     let data;
-    if (state.q.trim()) {
-      data = await api.search({ ...params, q: state.q });
-    } else {
-      data = await api.videos(params);
-    }
+    if (state.q.trim()) data = await api.search({ ...params, q: state.q });
+    else data = await api.videos(params);
 
     state.totalPages = data.pages || 1;
     document.getElementById('totalCount').textContent = `${data.total} ${t('unit_videos')}`;
@@ -225,137 +218,147 @@ function renderPagination() {
 }
 window.goPage = (p) => { state.page = p; loadVideos(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-// ── Banner ────────────────────────────────────────────────────────────────
+// ── Banner（双列顶部 + 侧边广告 + 底部）──────────────────────────────────────
+function bannerMedia(b) {
+  const src = mediaUrl(b.image_url);
+  if (!src) return '';
+  return b.media_type === 'video'
+    ? `<video src="${src}" autoplay muted loop playsinline></video>`
+    : `<img src="${src}" alt="${esc(b.title || '')}" loading="lazy">`;
+}
+
 async function loadBanners() {
   try {
     const data = await api.banners();
 
-    function fill(position, slidesId, wrapId, swiperClass, paginationClass) {
-      const items = data[position] || [];
-      if (!items.length) return false;
-      document.getElementById(wrapId).style.display = '';
-      const slidesEl = document.getElementById(slidesId);
-      slidesEl.innerHTML = items.map(b => {
-        // mediaUrl：后端相对路径(/static/…)拼成 Railway 绝对地址，外链原样，挡 javascript:
-        const src  = mediaUrl(b.image_url);
+    // 双列 Banner：复用 top 位置（取前两条；只有一条则单列全宽）
+    const tops = (data.top || []).filter(b => mediaUrl(b.image_url));
+    if (tops.length) {
+      const dual = document.getElementById('dualBanner');
+      dual.style.display = '';
+      const setItem = (el, b) => {
         const link = safeUrl(b.link_url);
-        if (!src) return '';   // 无有效媒体地址则跳过该 slide
-        // 支持 image / gif（均用 img）/ video（用 video 标签自动播放）
-        const media = b.media_type === 'video'
-          ? `<video src="${src}" autoplay muted loop playsinline></video>`
-          : `<img src="${src}" alt="${esc(b.title || '')}" loading="lazy">`;
-        return `<div class="swiper-slide">
-          <a href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>
-            ${media}
-          </a>
-        </div>`;
-      }).join('');
-      const horizontal = position === 'top' || position === 'bottom';
-      new Swiper(`.${swiperClass}`, {
-        loop: items.length > 1,
-        autoplay: items.length > 1 ? { delay: items[0].duration || 4000, disableOnInteraction: false } : false,
-        effect: position === 'top' ? 'fade' : 'slide',
-        fadeEffect: { crossFade: true },
-        pagination: { el: `.${paginationClass}`, clickable: true },
-        navigation: position === 'top' ? { prevEl: '.swiper-button-prev', nextEl: '.swiper-button-next' } : false,
-        speed: 500,
-      });
-      return true;
+        el.href = link || '#';
+        if (link) el.target = '_blank'; else el.removeAttribute('target');
+        el.innerHTML = bannerMedia(b);
+        el.style.display = '';
+      };
+      setItem(document.getElementById('dualBanner1'), tops[0]);
+      if (tops.length >= 2) setItem(document.getElementById('dualBanner2'), tops[1]);
+      else dual.classList.add('single');
     }
 
-    fill('top',    'bannerTopSlides',    'bannerTop',      'swiper-top',    'swiper-pagination-top');
-    const hasLeft = fill('left', 'bannerLeftSlides', 'leftSidebar', 'swiper-left', 'swiper-pagination-left');
-    document.querySelector('.home').classList.toggle('has-left', hasLeft);
-    fill('right',  'bannerRightSlides',  'rightBannerBox', 'swiper-right',  'swiper-pagination-right');
-    fill('bottom', 'bannerBottomSlides', 'bannerBottom',   'swiper-bottom', 'swiper-pagination-bottom');
-    refreshRightAside();
+    // 侧边广告：复用 right 位置（堆叠展示）
+    const rights = (data.right || []).filter(b => mediaUrl(b.image_url));
+    if (rights.length) {
+      document.getElementById('sideAd').innerHTML = rights.map(b => {
+        const link = safeUrl(b.link_url);
+        return `<a class="side-ad-item" href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>${bannerMedia(b)}</a>`;
+      }).join('');
+      document.getElementById('sideAdWidget').style.display = '';
+    }
+
+    // 底部 Banner（保留 bottom 位置）
+    const bottoms = (data.bottom || []).filter(b => mediaUrl(b.image_url));
+    if (bottoms.length) {
+      document.getElementById('bannerBottom').style.display = '';
+      document.getElementById('bannerBottomSlides').innerHTML = bottoms.map(b => {
+        const link = safeUrl(b.link_url);
+        return `<div class="swiper-slide"><a href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>${bannerMedia(b)}</a></div>`;
+      }).join('');
+      new Swiper('.swiper-bottom', {
+        loop: bottoms.length > 1,
+        autoplay: bottoms.length > 1 ? { delay: bottoms[0].duration || 4000, disableOnInteraction: false } : false,
+        pagination: { el: '.swiper-pagination-bottom', clickable: true },
+        speed: 500,
+      });
+    }
   } catch { }
 }
 
-// 右侧栏只要有「Banner 或操作按钮」之一就显示；并据此切换网格列数
-function refreshRightAside() {
-  const hasBanner  = document.getElementById('rightBannerBox').style.display !== 'none';
-  const hasActions = document.getElementById('sideActions').style.display !== 'none';
-  const show = hasBanner || hasActions;
-  document.getElementById('rightSidebar').style.display = show ? '' : 'none';
-  document.querySelector('.home').classList.toggle('has-right', show);
-}
-
-// ── 分类筛选 ──────────────────────────────────────────────────────────────
-async function loadCategoryFilter() {
-  const box = document.getElementById('catFilter');
+// ── 分类列表 + 热门标签 + 抽屉分类 ─────────────────────────────────────────
+async function loadCategories() {
   try {
-    const cats = await api.categories();
-    // 只展示有视频的分类，避免一堆空分类干扰浏览
-    const usable = (cats || []).filter(c => (c.video_count || 0) > 0);
-    if (!usable.length) { box.innerHTML = ''; return; }
-    const chip = (id, label, count) =>
-      `<button class="chip${String(state.category_id) === String(id) ? ' active' : ''}"
-               role="tab" data-cat="${id}" aria-selected="${String(state.category_id) === String(id)}">
-         ${esc(label)}${count != null ? ` <span class="chip-count">${count}</span>` : ''}
-       </button>`;
-    box.innerHTML =
-      chip('', t('all'), null) +
-      usable.map(c => chip(c.id, c.name, c.video_count)).join('');
-  } catch { box.innerHTML = ''; }
+    allCats = (await api.categories() || []).filter(c => (c.video_count || 0) > 0);
+  } catch { allCats = []; }
+  renderCategories();
+  drawer.renderCategories(allCats, state.category_id);
 }
 
-document.getElementById('catFilter').addEventListener('click', e => {
-  const btn = e.target.closest('[data-cat]');
-  if (!btn) return;
-  const id = btn.dataset.cat;
-  if (String(state.category_id) === String(id)) return;
-  state.category_id = id;
+function renderCategories() {
+  // 侧边分类列表
+  const list = document.getElementById('sideCats');
+  const row = (id, label, count, active) =>
+    `<li><button class="side-cat${active ? ' active' : ''}" data-cat="${id}">
+       <span class="truncate">${esc(label)}</span>
+       ${count != null ? `<span class="side-cat-count">${count}</span>` : ''}
+     </button></li>`;
+  list.innerHTML =
+    row('', t('all'), null, !state.category_id) +
+    allCats.map(c => row(c.id, c.name, c.video_count, String(state.category_id) === String(c.id))).join('');
+
+  // 热门标签（按视频数排序，取前 12）
+  const hot = [...allCats].sort((a, b) => (b.video_count || 0) - (a.video_count || 0)).slice(0, 12);
+  if (hot.length) {
+    document.getElementById('hotTags').innerHTML = hot.map(c =>
+      `<button class="tag${String(state.category_id) === String(c.id) ? ' active' : ''}" data-cat="${c.id}">${esc(c.name)}</button>`).join('');
+    document.getElementById('hotTagsWidget').style.display = '';
+  }
+}
+
+function selectCategory(id) {
+  state.category_id = String(id);
   state.page = 1;
-  // 高亮切换（不重新请求分类，纯前端切 active）
-  document.querySelectorAll('#catFilter .chip').forEach(c => {
-    const on = c.dataset.cat === id;
-    c.classList.toggle('active', on);
-    c.setAttribute('aria-selected', on);
-  });
   loadVideos();
+  renderCategories();
+  drawer.setActive(state.category_id);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('sideCats').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]'); if (b) selectCategory(b.dataset.cat);
+});
+document.getElementById('hotTags').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]'); if (b) selectCategory(b.dataset.cat);
+});
+
+// ── 汉堡抽屉 ───────────────────────────────────────────────────────────────
+const drawer = setupDrawer({ onCategory: selectCategory });
+// 抽屉里「分类」链接 → 滚动到右侧分类栏
+document.getElementById('drawerToCats').addEventListener('click', e => {
+  e.preventDefault();
+  drawer.close();
+  document.getElementById('categories').scrollIntoView({ behavior: 'smooth' });
 });
 
 // ── 搜索 ──────────────────────────────────────────────────────────────────
 let searchTimer;
 document.getElementById('searchInput').addEventListener('input', e => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    state.q = e.target.value;
-    state.page = 1;
-    loadVideos();
-  }, 400);
+  searchTimer = setTimeout(() => { state.q = e.target.value; state.page = 1; loadVideos(); }, 400);
 });
 
-// ── 网站设置 + 右侧操作按钮 ────────────────────────────────────────────────
+// ── 网站设置 + 下载/客服按钮 ───────────────────────────────────────────────
 async function loadSettings() {
   try {
     const s = await api.settings();
-    if (s.site_name) {
-      document.getElementById('siteName').textContent = s.site_name;
-      document.title = s.site_name;
-    }
+    if (s.site_name) { document.getElementById('siteName').textContent = s.site_name; document.title = s.site_name; }
     if (s.footer_text) document.getElementById('footer').textContent = s.footer_text;
 
-    // 右侧「下载 APP / 联系客服」按钮（各 2 个）：数组来自环境变量；
-    // 兼容旧单值字段（只配了 APP_DOWNLOAD_URL/CONTACT_URL 时也能显示）
     const downloads = (s.download_apps && s.download_apps.length)
-      ? s.download_apps
-      : (s.app_download_url ? [{ name: '', url: s.app_download_url }] : []);
+      ? s.download_apps : (s.app_download_url ? [{ name: '', url: s.app_download_url }] : []);
     const contacts = (s.contacts && s.contacts.length)
-      ? s.contacts
-      : (s.contact_url ? [{ name: '', url: s.contact_url }] : []);
+      ? s.contacts : (s.contact_url ? [{ name: '', url: s.contact_url }] : []);
     const box = document.getElementById('sideActions');
-    const hasActions = renderSideButtons(downloads, contacts, box);
-    box.style.display = hasActions ? '' : 'none';
+    if (renderSideButtons(downloads, contacts, box))
+      document.getElementById('sideActionsWidget').style.display = '';
   } catch { }
-  refreshRightAside();
 }
 
 // ── 初始化 ────────────────────────────────────────────────────────────────
 loadSettings();
 loadBanners();
-loadCategoryFilter();
+loadCategories();
 loadVideos();
 </script>
 </body>
