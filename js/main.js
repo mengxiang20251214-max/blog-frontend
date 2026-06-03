@@ -323,8 +323,9 @@ export function qs(key) {
   return new URLSearchParams(location.search).get(key);
 }
 
-// ── 交互动画初始化（页面加载逐个淡入 + 回到顶部按钮）──────────────────────────
-// 纯新增、自运行；keyframe + fill:both 让元素默认可见，JS 不跑也不会被隐藏（防白屏）。
+// ── 交互动画初始化（滚动触发显现 + 视差 + 回到顶部）──────────────────────────
+// 纯新增、自运行。滚动显现用 IntersectionObserver；含 5s 兜底强制显示，
+// 任何情况下都不会让内容长期卡在隐藏态（杜绝白屏）。
 (function initInteractions() {
   if (typeof document === 'undefined') return;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -342,37 +343,69 @@ export function qs(key) {
     onScroll();
   }
 
-  // 逐个淡入：监听内容容器，新加入的卡片/标签/广告依次延迟 0.05s 淡入
+  // 滚动触发显现：进入视口才淡入上浮，依次延迟 0.05s
   const SEL = '.video-card:not(.skeleton-card), .tag, .side-cat, .dual-banner-item, .side-ad-item';
-  function targetsIn(node) {
-    if (node.nodeType !== 1) return [];
-    const out = [];
-    if (node.matches && node.matches(SEL)) out.push(node);
-    else if (node.closest) { const p = node.closest('.dual-banner-item'); if (p) out.push(p); }
-    if (node.querySelectorAll) out.push(...node.querySelectorAll(SEL));
-    return out;
-  }
-  function animate(els) {
-    let i = 0;
-    for (const el of els) {
-      if (el.__animed) continue;
-      el.__animed = true;
-      el.style.animationDelay = Math.min(i++ * 0.05, 0.5) + 's';
-      el.classList.add('anim-in');
-    }
-  }
   function setupReveal() {
-    if (reduce) return;
+    if (reduce || !('IntersectionObserver' in window)) return;
     if (!document.querySelector('.video-grid, .dual-banner')) return;   // 仅前台页面启用
+
+    const io = new IntersectionObserver((entries, obs) => {
+      let k = 0;
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.style.transitionDelay = Math.min(k++ * 0.05, 0.4) + 's';
+        e.target.classList.add('sr-in');
+        obs.unobserve(e.target);
+      }
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+
+    function register(els) {
+      for (const el of els) {
+        if (el.__sr) continue;
+        el.__sr = true;
+        el.classList.add('sr');
+        io.observe(el);
+      }
+    }
+    function targetsIn(node) {
+      if (node.nodeType !== 1) return [];
+      const out = [];
+      if (node.matches && node.matches(SEL)) out.push(node);
+      else if (node.closest) { const p = node.closest('.dual-banner-item'); if (p) out.push(p); }
+      if (node.querySelectorAll) out.push(...node.querySelectorAll(SEL));
+      return out;
+    }
     const mo = new MutationObserver(muts => {
       const batch = [];
       for (const m of muts) for (const n of m.addedNodes) batch.push(...targetsIn(n));
-      if (batch.length) animate(batch);
+      if (batch.length) register(batch);
     });
     mo.observe(document.body, { childList: true, subtree: true });
+    register([...document.querySelectorAll(SEL)]);
+
+    // 兜底：5 秒后强制显示任何仍隐藏的元素，绝不长期隐藏内容
+    setTimeout(() => {
+      document.querySelectorAll('.sr:not(.sr-in)').forEach(el => el.classList.add('sr-in'));
+    }, 5000);
   }
 
-  function start() { try { setupBackToTop(); setupReveal(); } catch (_) {} }
+  // 视差：背景光晕随滚动极轻微位移（rAF 节流 + 60px 上限）
+  function setupParallax() {
+    if (reduce) return;
+    const bg = document.querySelector('.bg-aurora');
+    if (!bg) return;
+    let ticking = false;
+    const update = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      bg.style.transform = 'translate3d(0,' + Math.min(y * 0.05, 60) + 'px,0)';
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+  }
+
+  function start() { try { setupBackToTop(); setupReveal(); setupParallax(); } catch (_) {} }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();
