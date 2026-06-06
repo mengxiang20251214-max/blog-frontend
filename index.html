@@ -9,6 +9,15 @@
 </head>
 <body>
 
+<!-- 顶部公告栏（内容由 /api/public/announcement 配置；默认折叠隐藏，由 main.js 控制） -->
+<div id="announce" class="announce" role="region" aria-label="公告">
+  <div class="announce-inner">
+    <span class="announce-icon" aria-hidden="true">📢</span>
+    <span class="announce-text"></span>
+    <button class="announce-close" type="button" aria-label="关闭公告">✕</button>
+  </div>
+</div>
+
 <div class="bg-aurora" aria-hidden="true"></div>
 
 <!-- 导航栏 -->

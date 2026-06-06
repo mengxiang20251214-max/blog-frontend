@@ -186,6 +186,19 @@
               <div class="form-group"><label class="form-label">网站描述</label><textarea id="setDesc" class="input" rows="2" style="resize:none;"></textarea></div>
               <div class="form-group"><label class="form-label">SEO 关键词</label><input id="setKeys" class="input" placeholder="视频,博客"></div>
               <div class="form-group"><label class="form-label">底部版权</label><input id="setFooter" class="input" placeholder="© 2024 VideoHub Pro."></div>
+
+              <!-- 顶部公告栏 -->
+              <div style="border-top:1px solid var(--border);margin:.25rem 0 .25rem;padding-top:.9rem;font-weight:600;font-size:.8125rem;">📢 顶部公告栏</div>
+              <label style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;cursor:pointer;">
+                <input type="checkbox" id="annEnabled" style="width:auto;cursor:pointer;"> 启用公告栏
+              </label>
+              <div class="form-group"><label class="form-label">公告文字</label><input id="annText" class="input" placeholder="限时优惠！新用户注册即送 100 元红包"></div>
+              <div class="form-group"><label class="form-label">跳转链接 <span class="text-muted text-xs">（可选，http/https）</span></label><input id="annLink" class="input" placeholder="https://..."></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                <div class="form-group"><label class="form-label">自动隐藏秒数 <span class="text-muted text-xs">（0=不隐藏）</span></label><input id="annAutoHide" class="input" type="number" min="0" value="0"></div>
+                <div class="form-group"><label class="form-label">主题色</label><input id="annColor" class="input" type="color" value="#6366f1" style="height:42px;padding:.2rem;cursor:pointer;"></div>
+              </div>
+
               <button class="btn btn-primary" onclick="saveSettings()" style="align-self:flex-start;" data-i18n="btn_save">保存设置</button>
             </div>
           </div>
@@ -879,6 +892,12 @@ async function loadSettings() {
     document.getElementById('setDesc').value   = s.site_description || '';
     document.getElementById('setKeys').value   = s.site_keywords    || '';
     document.getElementById('setFooter').value = s.footer_text      || '';
+    // 公告栏
+    document.getElementById('annEnabled').checked = (s.announcement_enabled === 'true');
+    document.getElementById('annText').value     = s.announcement_text     || '';
+    document.getElementById('annLink').value     = s.announcement_link     || '';
+    document.getElementById('annAutoHide').value = s.announcement_auto_hide || '0';
+    document.getElementById('annColor').value    = /^#[0-9a-fA-F]{6}$/.test(s.announcement_color || '') ? s.announcement_color : '#6366f1';
   } catch { }
   loadBackups();
 }
@@ -921,6 +940,12 @@ window.saveSettings = async function() {
       site_description: document.getElementById('setDesc').value,
       site_keywords:    document.getElementById('setKeys').value,
       footer_text:      document.getElementById('setFooter').value,
+      // 顶部公告栏
+      announcement_enabled:   document.getElementById('annEnabled').checked ? 'true' : 'false',
+      announcement_text:      document.getElementById('annText').value,
+      announcement_link:      document.getElementById('annLink').value,
+      announcement_auto_hide: String(parseInt(document.getElementById('annAutoHide').value, 10) || 0),
+      announcement_color:     document.getElementById('annColor').value,
     });
     document.getElementById('settingsSaved').classList.remove('hidden');
     setTimeout(() => document.getElementById('settingsSaved').classList.add('hidden'), 3000);

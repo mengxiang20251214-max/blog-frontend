@@ -7,6 +7,7 @@
  * 翻译范围：导航、按钮、提示文字（界面文案）
  * 不翻译：视频标题、描述、分类/国家/类型名称（数据内容）
  */
+import { API_BASE } from './api.js';   // 仅用于公告栏拉取（api.js 无 import，无循环依赖）
 
 // ── i18n 字典 ──────────────────────────────────────────────────────────────
 // 后台语言切换器支持：中 / 英 / 泰
@@ -421,6 +422,47 @@ export function qs(key) {
   function start() { try { setupBackToTop(); setupReveal(); setupParallax(); setupScrollPause(); } catch (_) {} }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
+})();
+
+// ── 顶部公告栏（读取 /api/public/announcement，可关闭、当天不再显示、自动隐藏）────
+(function initAnnouncement() {
+  if (typeof document === 'undefined') return;
+  const bar = document.getElementById('announce');
+  if (!bar) return;                                  // 仅含公告栏的页面（首页）
+  const textEl = bar.querySelector('.announce-text');
+  const closeBtn = bar.querySelector('.announce-close');
+  let autoTimer, dismissKey = '';
+  const hide = () => { bar.classList.remove('show'); clearTimeout(autoTimer); };
+  const dismiss = () => { try { if (dismissKey) localStorage.setItem(dismissKey, '1'); } catch (_) {} hide(); };
+  closeBtn && closeBtn.addEventListener('click', dismiss);
+
+  fetch(API_BASE + '/api/public/announcement')
+    .then(r => (r.ok ? r.json() : null))
+    .then(cfg => {
+      if (!cfg || !cfg.enabled || !cfg.text) return;
+      const d = new Date();
+      const ymd = '' + d.getFullYear() + (d.getMonth() + 1) + d.getDate();
+      dismissKey = 'vh_ann_' + (cfg.version || 'x') + '_' + ymd;   // 当天 + 内容指纹：内容变了重新弹
+      try { if (localStorage.getItem(dismissKey)) return; } catch (_) {}
+
+      // 文字（配了链接则整条可点击新窗口打开）
+      if (cfg.link && /^https?:\/\//i.test(cfg.link)) {
+        const a = document.createElement('a');
+        a.href = cfg.link; a.target = '_blank'; a.rel = 'noopener';
+        a.className = 'announce-link'; a.textContent = cfg.text;
+        textEl.textContent = ''; textEl.appendChild(a);
+      } else {
+        textEl.textContent = cfg.text;
+      }
+      // 主题色（校验后再用，挡掉非法值）
+      const col = String(cfg.color || '').trim();
+      if (/^#?[0-9a-fA-F]{3,8}$/.test(col)) bar.style.setProperty('--announce-color', col[0] === '#' ? col : '#' + col);
+
+      requestAnimationFrame(() => bar.classList.add('show'));
+      const sec = parseInt(cfg.auto_hide, 10) || 0;
+      if (sec > 0) autoTimer = setTimeout(hide, sec * 1000);
+    })
+    .catch(() => {});
 })();
 
 // ── 右侧「下载 APP / 联系客服」按钮渲染 ──────────────────────────────────────

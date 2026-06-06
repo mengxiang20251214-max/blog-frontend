@@ -55,6 +55,30 @@ input, select, textarea { font: inherit; }
 * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 ::selection { background: rgba(110,121,232,.3); }
 
+/* ── 顶部公告栏 ───────────────────────────────────────────────────────────── */
+.announce {
+  overflow: hidden; max-height: 0; transition: max-height .35s var(--ease, ease);
+  color: #fff; text-align: center;
+  background: var(--announce-color, #6366f1);
+  background: linear-gradient(100deg, var(--announce-color, #6366f1), color-mix(in srgb, var(--announce-color, #6366f1), #ffffff 26%));
+}
+.announce.show { max-height: 80px; }
+.announce-inner {
+  position: relative; min-height: 44px; display: flex; align-items: center; justify-content: center;
+  gap: .5rem; padding: .45rem 2.7rem; font-size: .85rem; font-weight: 600; line-height: 1.35;
+  text-shadow: 0 1px 2px rgba(0,0,0,.18);
+}
+.announce-icon { flex-shrink: 0; }
+.announce-text a, .announce-link { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+.announce-close {
+  position: absolute; right: .55rem; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 50%; color: #fff; opacity: .85;
+  display: flex; align-items: center; justify-content: center; font-size: .9rem;
+  transition: background .15s ease, opacity .15s ease;
+}
+.announce-close:hover { background: rgba(255,255,255,.22); opacity: 1; }
+@media (max-width: 640px) { .announce-inner { font-size: .78rem; padding: .45rem 2.5rem; } }
+
 /* 背景光晕：大幅收敛，趋近 example.com 的扁平干净（仅极淡的氛围） */
 .bg-aurora {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
