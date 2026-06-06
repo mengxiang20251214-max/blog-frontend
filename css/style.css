@@ -33,7 +33,10 @@
 
 /* ── Reset ───────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+/* 原生顺滑滚动（不再全局 smooth，避免黏滞感）；程序化滚动仍由 JS 显式 smooth 控制 */
+html { scroll-behavior: auto; }
+/* 交互元素去掉双击缩放的 300ms 延迟，触摸更跟手 */
+a, button, .video-card, .tag, .chip, .side-cat, .nav-link, .page-btn, .drawer-cat { touch-action: manipulation; }
 body {
   background: var(--bg); color: var(--text);
   /* system-ui 优先，呼应 example.com 的系统原生字体 */
@@ -55,10 +58,13 @@ input, select, textarea { font: inherit; }
 /* 背景光晕：大幅收敛，趋近 example.com 的扁平干净（仅极淡的氛围） */
 .bg-aurora {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  will-change: transform;   /* 提升为独立合成层：视差位移走 GPU，不触发页面重绘 */
   background:
     radial-gradient(55% 45% at 12% -5%, rgba(110,121,232,.10), transparent 70%),
     radial-gradient(60% 55% at 50% 110%, rgba(91,140,240,.07), transparent 70%);
 }
+/* 滚动期间暂停全屏装饰动画，减少滚动时的重绘 → 更顺滑 */
+.scrolling .bg-aurora::before, .scrolling .bg-aurora::after { animation-play-state: paused; }
 
 /* ── 通用工具 ────────────────────────────────────────────────────────────── */
 .hidden   { display: none !important; }

@@ -389,9 +389,11 @@ export function qs(key) {
     }, 5000);
   }
 
-  // 视差：背景光晕随滚动极轻微位移（rAF 节流 + 60px 上限）
+  // 视差：仅「桌面 + 精确指针(鼠标)」启用；触摸/移动端一律关闭，避免滚动卡顿。
+  // rAF 节流 + 60px 上限；.bg-aurora 已 will-change:transform，位移走 GPU 不触发重绘。
   function setupParallax() {
-    if (reduce) return;
+    const fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (reduce || !fine) return;
     const bg = document.querySelector('.bg-aurora');
     if (!bg) return;
     let ticking = false;
@@ -405,7 +407,18 @@ export function qs(key) {
     }, { passive: true });
   }
 
-  function start() { try { setupBackToTop(); setupReveal(); setupParallax(); } catch (_) {} }
+  // 滚动期间给 <html> 加 .scrolling（停 180ms 后移除）→ CSS 暂停全屏装饰动画，减少重绘
+  function setupScrollPause() {
+    const root = document.documentElement;
+    let t;
+    window.addEventListener('scroll', () => {
+      if (!root.classList.contains('scrolling')) root.classList.add('scrolling');
+      clearTimeout(t);
+      t = setTimeout(() => root.classList.remove('scrolling'), 180);
+    }, { passive: true });
+  }
+
+  function start() { try { setupBackToTop(); setupReveal(); setupParallax(); setupScrollPause(); } catch (_) {} }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();
