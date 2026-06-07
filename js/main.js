@@ -430,9 +430,11 @@ export function qs(key) {
   const bar = document.getElementById('announce');
   if (!bar) return;                                  // 仅含公告栏的页面（首页）
   const textEl = bar.querySelector('.announce-text');
+  const iconEl = bar.querySelector('.announce-icon');
   const closeBtn = bar.querySelector('.announce-close');
-  let autoTimer, dismissKey = '';
-  const hide = () => { bar.classList.remove('show'); clearTimeout(autoTimer); };
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let dismissKey = '', iconTimer;
+  const hide = () => { bar.classList.remove('show'); clearInterval(iconTimer); };
   const dismiss = () => { try { if (dismissKey) localStorage.setItem(dismissKey, '1'); } catch (_) {} hide(); };
   closeBtn && closeBtn.addEventListener('click', dismiss);
 
@@ -457,10 +459,28 @@ export function qs(key) {
       // 主题色（校验后再用，挡掉非法值）
       const col = String(cfg.color || '').trim();
       if (/^#?[0-9a-fA-F]{3,8}$/.test(col)) bar.style.setProperty('--announce-color', col[0] === '#' ? col : '#' + col);
+      // 样式变体（可选）：后端将来返回 cfg.style = 'gold' | 'neon' 时自动套用
+      if (cfg.style && /^[a-z]+$/.test(cfg.style)) bar.classList.add('announce--' + cfg.style);
+
+      // 动态图标轮换（reduced-motion 时固定）
+      if (iconEl && !reduceMotion) {
+        const icons = ['📢', '🔔', '🎉', '⚡', '🔥'];
+        let ix = 0;
+        iconEl.textContent = icons[0];
+        iconTimer = setInterval(() => { ix = (ix + 1) % icons.length; iconEl.textContent = icons[ix]; }, 4500);
+      }
+
+      // 自动隐藏：用进度条的 animationend 驱动（悬停可暂停，方便阅读）
+      const sec = parseInt(cfg.auto_hide, 10) || 0;
+      if (sec > 0) {
+        bar.style.setProperty('--ann-dur', sec + 's');
+        const prog = document.createElement('div');
+        prog.className = 'announce-progress';
+        prog.addEventListener('animationend', hide);
+        bar.appendChild(prog);
+      }
 
       requestAnimationFrame(() => bar.classList.add('show'));
-      const sec = parseInt(cfg.auto_hide, 10) || 0;
-      if (sec > 0) autoTimer = setTimeout(hide, sec * 1000);
     })
     .catch(() => {});
 })();

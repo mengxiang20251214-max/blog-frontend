@@ -55,29 +55,88 @@ input, select, textarea { font: inherit; }
 * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 ::selection { background: rgba(110,121,232,.3); }
 
-/* ── 顶部公告栏 ───────────────────────────────────────────────────────────── */
+/* ── 顶部公告栏（毛玻璃 + 渐变 + 发光 + 动效）──────────────────────────────── */
 .announce {
-  overflow: hidden; max-height: 0; transition: max-height .35s var(--ease, ease);
+  --ann-c: var(--announce-color, #6366f1);
+  position: relative; overflow: hidden; max-height: 0;
+  transition: max-height .35s var(--ease, ease), filter .2s ease;
   color: #fff; text-align: center;
-  background: var(--announce-color, #6366f1);
-  background: linear-gradient(100deg, var(--announce-color, #6366f1), color-mix(in srgb, var(--announce-color, #6366f1), #ffffff 26%));
+  background: var(--ann-c);                       /* 兜底纯色（任何颜色都好看）*/
 }
-.announce.show { max-height: 80px; }
+/* 玻璃渐变 + 模糊（支持 color-mix 的浏览器；从主题色渐变到紫罗兰，并带轻微透明做毛玻璃）*/
+@supports (background: color-mix(in srgb, red, blue)) {
+  .announce {
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--ann-c), transparent 5%),
+      color-mix(in srgb, var(--ann-c), #8b5cf6 45%));
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+}
+.announce.show { max-height: 88px; box-shadow: 0 6px 24px rgba(0,0,0,.28); }
+@supports (background: color-mix(in srgb, red, blue)) {
+  .announce.show { box-shadow: 0 6px 24px rgba(0,0,0,.28), 0 0 18px color-mix(in srgb, var(--ann-c), transparent 55%); }
+}
+/* 底部发光细边框 */
+.announce.show::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+}
 .announce-inner {
-  position: relative; min-height: 44px; display: flex; align-items: center; justify-content: center;
-  gap: .5rem; padding: .45rem 2.7rem; font-size: .85rem; font-weight: 600; line-height: 1.35;
-  text-shadow: 0 1px 2px rgba(0,0,0,.18);
+  position: relative; min-height: 46px; display: flex; align-items: center; justify-content: center;
+  gap: .55rem; padding: .5rem 2.9rem; font-size: .875rem; font-weight: 600; line-height: 1.35;
 }
-.announce-icon { flex-shrink: 0; }
-.announce-text a, .announce-link { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+.announce.show .announce-inner { animation: annSlideDown .35s var(--ease, ease) both; }
+.announce-icon { flex-shrink: 0; display: inline-block; animation: annBounce 1.4s ease-in-out infinite; }
+.announce-text { color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.25), 0 0 10px rgba(255,255,255,.18); }
+.announce-text a, .announce-link {
+  color: #fff; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px;
+  display: inline-block; transition: transform .18s var(--ease, ease), color .18s ease;
+}
 .announce-close {
   position: absolute; right: .55rem; top: 50%; transform: translateY(-50%);
-  width: 28px; height: 28px; border-radius: 50%; color: #fff; opacity: .85;
-  display: flex; align-items: center; justify-content: center; font-size: .9rem;
-  transition: background .15s ease, opacity .15s ease;
+  width: 30px; height: 30px; border-radius: 50%; color: #fff; opacity: .9;
+  display: flex; align-items: center; justify-content: center; font-size: .95rem;
+  background: rgba(255,255,255,.12);
+  transition: background .2s ease, transform .25s var(--ease, ease), opacity .2s ease;
 }
-.announce-close:hover { background: rgba(255,255,255,.22); opacity: 1; }
-@media (max-width: 640px) { .announce-inner { font-size: .78rem; padding: .45rem 2.5rem; } }
+.announce-close:active { transform: translateY(-50%) scale(.86); }
+/* 自动隐藏进度条：由 main.js 在 auto_hide>0 时注入，从右往左缩小；悬停暂停 */
+.announce-progress {
+  position: absolute; left: 0; bottom: 0; height: 3px; width: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,.9));
+  transform-origin: left;
+}
+.announce.show .announce-progress { animation: annProgress var(--ann-dur, 5s) linear forwards; }
+
+@media (hover: hover) {
+  .announce:hover { filter: brightness(1.07); }
+  .announce:hover .announce-progress { animation-play-state: paused; }   /* 悬停暂停倒计时，方便阅读 */
+  .announce-link:hover { transform: translateX(3px); color: #ffe7a6; }
+  .announce-close:hover { background: rgba(255,255,255,.28); opacity: 1; transform: translateY(-50%) rotate(90deg) scale(1.15); }
+}
+
+@keyframes annSlideDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+@keyframes annBounce { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-3px) rotate(-9deg); } 60% { transform: translateY(-1px) rotate(7deg); } }
+@keyframes annProgress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* 样式变体（可选）：main.js 据 cfg.style 添加 .announce--gold / .announce--neon */
+.announce--gold { --ann-c: #e8b84b; background: linear-gradient(135deg, #f4c150, #e07a3f); }
+.announce--gold .announce-text {
+  background: linear-gradient(135deg, #fff7e2, #ffd27a);
+  -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none;
+}
+.announce--neon { background: rgba(15,15,22,.86); }
+.announce--neon.show { box-shadow: 0 0 22px rgba(124,108,255,.5), inset 0 0 0 1px rgba(124,108,255,.55); }
+.announce--neon .announce-text { color: #fff; text-shadow: 0 0 8px rgba(124,108,255,.85); }
+.announce--neon .announce-icon { filter: drop-shadow(0 0 5px rgba(124,108,255,.8)); }
+
+@media (max-width: 640px) {
+  .announce-inner { font-size: .8rem; padding: .5rem 2.7rem; }
+  .announce.show { max-height: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .announce-icon, .announce.show .announce-inner, .announce.show .announce-progress { animation: none; }
+}
 
 /* 背景光晕：大幅收敛，趋近 example.com 的扁平干净（仅极淡的氛围） */
 .bg-aurora {
