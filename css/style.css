@@ -312,21 +312,92 @@ select.input { cursor: pointer; }
 .app-btn-group { display: flex; flex-direction: column; gap: .6rem; }
 .app-btn-group + .app-btn-group { margin-top: .85rem; padding-top: .85rem; border-top: 1px dashed var(--glass-border); }
 .app-btn {
+  position: relative; overflow: hidden;
   display: flex; align-items: center; gap: .65rem; padding: .75rem .95rem; min-height: 44px;
   border-radius: 40px; font-size: .875rem; font-weight: 700; color: #fff;
   transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
 }
-.app-btn__icon { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; background: rgba(255,255,255,.2); flex-shrink: 0; }
+.app-btn__icon { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; background: rgba(255,255,255,.2); flex-shrink: 0; transition: transform .3s ease; }
 .app-btn__text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .app-btn__arrow { opacity: .65; flex-shrink: 0; transition: transform .2s ease; }
 /* 悬停：上移 3px + 亮度 +10% + 阴影增强；点击：下移 1px 按压感（0.2s ease）*/
 .app-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+.app-btn:hover .app-btn__icon { transform: scale(1.12) rotate(-6deg); }
 .app-btn:hover .app-btn__arrow { transform: translate(2px, -2px); opacity: 1; }
 .app-btn:active { transform: translateY(1px); filter: brightness(1.02); }
-.app-btn--download { background: var(--grad); box-shadow: 0 8px 22px rgba(110,121,232,.34); }
+/* 悬停扫光：下载 + 客服按钮通用 */
+.app-btn::after {
+  content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,.6), transparent);
+  transform: skewX(-20deg); pointer-events: none;
+}
+.app-btn:hover::after { animation: app-btn-shine .9s ease forwards; }
+
+/* 下载按钮：呼吸光晕，比联系客服按钮更醒目、更强调「点我下载」。
+   同组内第 1/2/3 个按钮分别是金/橙/粉三种配色，第 4 个起循环回金色，便于区分多个下载渠道。 */
+.app-btn--download {
+  background: var(--grad-gold); color: #1c1606;
+  box-shadow: 0 8px 22px rgba(200,162,79,.4);
+  animation: app-btn-glow-gold 2.6s ease-in-out infinite;
+}
+.app-btn--download .app-btn__icon { background: rgba(28,22,6,.14); }
+.app-btn--download:hover { animation-play-state: paused; box-shadow: 0 10px 28px rgba(200,162,79,.6); }
+
+.app-btn-group .app-btn--download:nth-child(3n+2) {
+  background: linear-gradient(135deg, #ff9a76 0%, #f2542d 100%); color: #fff;
+  box-shadow: 0 8px 22px rgba(242,84,45,.4);
+  animation-name: app-btn-glow-orange;
+}
+.app-btn-group .app-btn--download:nth-child(3n+2) .app-btn__icon { background: rgba(255,255,255,.22); }
+.app-btn-group .app-btn--download:nth-child(3n+2):hover { box-shadow: 0 10px 28px rgba(242,84,45,.6); }
+
+.app-btn-group .app-btn--download:nth-child(3n) {
+  background: linear-gradient(135deg, #f472b6 0%, #db2777 100%); color: #fff;
+  box-shadow: 0 8px 22px rgba(219,39,119,.4);
+  animation-name: app-btn-glow-pink;
+}
+.app-btn-group .app-btn--download:nth-child(3n) .app-btn__icon { background: rgba(255,255,255,.22); }
+.app-btn-group .app-btn--download:nth-child(3n):hover { box-shadow: 0 10px 28px rgba(219,39,119,.6); }
+
+/* 客服按钮：WhatsApp / Telegram 保留各自品牌色（用户靠图标+颜色识别，不能乱改）；
+   其余客服渠道（比如以后加的第三个）按位置循环配色，呼应下载按钮的视觉语言但不撞色。 */
 .app-btn--whatsapp { background: linear-gradient(135deg, #25d366, #128c4b); box-shadow: 0 8px 22px rgba(37,211,102,.3); }
+.app-btn--whatsapp:hover { box-shadow: 0 10px 26px rgba(37,211,102,.5); }
 .app-btn--telegram { background: linear-gradient(135deg, #2aabee, #1c8fd1); box-shadow: 0 8px 22px rgba(42,171,238,.3); }
+.app-btn--telegram:hover { box-shadow: 0 10px 26px rgba(42,171,238,.5); }
 .app-btn--contact  { background: var(--grad); box-shadow: 0 8px 22px rgba(110,121,232,.3); }
+.app-btn--contact:hover { box-shadow: 0 10px 26px rgba(110,121,232,.5); }
+.app-btn-group .app-btn--contact:nth-of-type(2) {
+  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  box-shadow: 0 8px 22px rgba(124,58,237,.35);
+}
+.app-btn-group .app-btn--contact:nth-of-type(2):hover { box-shadow: 0 10px 26px rgba(124,58,237,.55); }
+.app-btn-group .app-btn--contact:nth-of-type(3) {
+  background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
+  box-shadow: 0 8px 22px rgba(8,145,178,.35);
+}
+.app-btn-group .app-btn--contact:nth-of-type(3):hover { box-shadow: 0 10px 26px rgba(8,145,178,.55); }
+
+@keyframes app-btn-glow-gold {
+  0%, 100% { box-shadow: 0 8px 22px rgba(200,162,79,.4); }
+  50%      { box-shadow: 0 8px 30px rgba(200,162,79,.7); }
+}
+@keyframes app-btn-glow-orange {
+  0%, 100% { box-shadow: 0 8px 22px rgba(242,84,45,.4); }
+  50%      { box-shadow: 0 8px 30px rgba(242,84,45,.7); }
+}
+@keyframes app-btn-glow-pink {
+  0%, 100% { box-shadow: 0 8px 22px rgba(219,39,119,.4); }
+  50%      { box-shadow: 0 8px 30px rgba(219,39,119,.7); }
+}
+@keyframes app-btn-shine {
+  from { left: -60%; }
+  to   { left: 130%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-btn--download { animation: none; }
+  .app-btn::after { display: none; }
+}
 
 /* ── 汉堡菜单 + 侧滑抽屉（移动端导航） ───────────────────────────────────── */
 .nav-hamburger {
@@ -384,15 +455,45 @@ select.input { cursor: pointer; }
 .side-widget { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; }
 .side-widget-title { font-size: .9rem; font-weight: 700; margin-bottom: .75rem; padding-left: .6rem; position: relative; }
 .side-widget-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 1em; border-radius: 3px; background: var(--grad); }
-.side-cats { list-style: none; display: flex; flex-direction: column; gap: .15rem; }
-.side-cat { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .5rem .65rem; border-radius: 10px; font-size: .85rem; color: var(--muted); transition: transform .2s ease, color .2s ease, background .2s ease; text-align: left; }
-.side-cat:hover { background: rgba(255,255,255,.05); color: var(--primary); transform: translateX(4px); }
-.side-cat.active { background: var(--grad-soft); color: var(--text); font-weight: 600; }
-.side-cat-count { font-size: .72rem; color: var(--muted); background: var(--bg3); padding: .05rem .45rem; border-radius: 999px; flex-shrink: 0; }
-.tag-cloud { display: flex; flex-wrap: wrap; gap: .45rem; }
-.tag { padding: .35rem .8rem; border-radius: 30px; font-size: .78rem; border: 1px solid var(--border); color: var(--muted); background: rgba(255,255,255,.03); transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease; }
-.tag:hover { background: var(--grad); border-color: transparent; color: #fff; transform: scale(1.05); }
-.tag.active { background: var(--grad); border-color: transparent; color: #fff; }
+.side-cats { list-style: none; display: flex; flex-direction: column; gap: .25rem; }
+.side-cat {
+  position: relative; width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: .5rem; padding: .55rem .7rem .55rem .9rem; border-radius: 10px; font-size: .85rem;
+  color: var(--muted); text-align: left; overflow: hidden;
+  transition: transform .2s ease, color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.side-cat::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 0;
+  border-radius: 3px; background: var(--cat-accent, var(--grad)); transition: height .2s ease;
+}
+.side-cat:hover { background: rgba(255,255,255,.05); color: var(--text); transform: translateX(4px); }
+.side-cat:hover::before, .side-cat.active::before { height: 58%; }
+.side-cat.active { background: var(--grad-soft); color: var(--text); font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.side-cat-count { font-size: .72rem; color: var(--muted); background: var(--bg3); padding: .05rem .5rem; border-radius: 999px; flex-shrink: 0; transition: background .2s ease, color .2s ease; }
+.side-cat.active .side-cat-count { background: var(--cat-accent, var(--grad)); color: #fff; }
+/* 分类强调色按顺序循环 6 种，和下载/客服按钮共用同一套配色语言，分类多了也不单调 */
+.side-cats li:nth-child(6n+1) .side-cat { --cat-accent: linear-gradient(180deg, #6e79e8, #5b8cf0); }
+.side-cats li:nth-child(6n+2) .side-cat { --cat-accent: linear-gradient(180deg, #e6c98a, #c8a24f); }
+.side-cats li:nth-child(6n+3) .side-cat { --cat-accent: linear-gradient(180deg, #ff9a76, #f2542d); }
+.side-cats li:nth-child(6n+4) .side-cat { --cat-accent: linear-gradient(180deg, #34d399, #059669); }
+.side-cats li:nth-child(6n+5) .side-cat { --cat-accent: linear-gradient(180deg, #f472b6, #db2777); }
+.side-cats li:nth-child(6n)   .side-cat { --cat-accent: linear-gradient(180deg, #2aabee, #1c8fd1); }
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tag {
+  padding: .35rem .85rem; border-radius: 30px; font-size: .78rem; font-weight: 600;
+  border: 1px solid var(--border); color: var(--muted); background: rgba(255,255,255,.03);
+  transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.tag:hover { background: var(--tag-accent, var(--grad)); border-color: transparent; color: #fff; transform: scale(1.06) translateY(-1px); box-shadow: 0 6px 16px var(--tag-shadow, rgba(110,121,232,.35)); }
+.tag.active { background: var(--tag-accent, var(--grad)); border-color: transparent; color: #fff; box-shadow: 0 4px 14px var(--tag-shadow, rgba(110,121,232,.3)); }
+/* 标签配色循环同一套 6 色，和分类列表呼应 */
+.tag-cloud .tag:nth-child(6n+1) { --tag-accent: linear-gradient(135deg, #6e79e8, #5b8cf0); --tag-shadow: rgba(110,121,232,.35); }
+.tag-cloud .tag:nth-child(6n+2) { --tag-accent: linear-gradient(135deg, #e6c98a, #c8a24f); --tag-shadow: rgba(200,162,79,.4); }
+.tag-cloud .tag:nth-child(6n+3) { --tag-accent: linear-gradient(135deg, #ff9a76, #f2542d); --tag-shadow: rgba(242,84,45,.35); }
+.tag-cloud .tag:nth-child(6n+4) { --tag-accent: linear-gradient(135deg, #34d399, #059669); --tag-shadow: rgba(5,150,105,.35); }
+.tag-cloud .tag:nth-child(6n+5) { --tag-accent: linear-gradient(135deg, #f472b6, #db2777); --tag-shadow: rgba(219,39,119,.35); }
+.tag-cloud .tag:nth-child(6n)   { --tag-accent: linear-gradient(135deg, #2aabee, #1c8fd1); --tag-shadow: rgba(28,143,209,.35); }
 .side-ad { padding: .5rem; }
 .side-ad-item { display: block; border-radius: 12px; overflow: hidden; margin-bottom: .5rem; transition: transform .3s cubic-bezier(.2,.9,.4,1.1), box-shadow .3s cubic-bezier(.2,.9,.4,1.1); }
 .side-ad-item:last-child { margin-bottom: 0; }
