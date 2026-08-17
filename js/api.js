@@ -9,7 +9,7 @@ const TOKEN_KEY = 'vh_token';
 /**
  * 把后端返回的媒体地址解析成「浏览器能正确访问的绝对地址」。
  *
- * 根本问题：后端把上传的 Banner/封面/视频存成「根相对路径」(/static/uploads/…)，
+ * 根本问题：后端把上传的封面/视频存成「根相对路径」(/static/uploads/…)，
  * 而前端跑在 Vercel。根相对路径会按【当前页面所在域名】解析 —— 也就是 Vercel，
  * 但文件其实在 Railway 后端 → 必然 404。
  *
@@ -38,7 +38,7 @@ export function isLoggedIn()      { return !!getToken(); }
 // opts.auth === true 表示这是「需要登录」的后台接口：
 //   - 自动附带 Authorization: Bearer <token>
 //   - 收到 401 时清除 token 并跳转到 admin.html（重新登录）
-// 公开接口（首页 / 视频详情 / 分类 / Banner / 设置）不传 auth：
+// 公开接口（首页 / 视频详情 / 分类 / 设置）不传 auth：
 //   - 完全不携带 token
 //   - 即使返回 401 也只抛错，绝不跳转登录页
 async function req(path, opts = {}) {
@@ -124,10 +124,6 @@ export const api = {
   categories() {
     return req('/api/categories');
   },
-  /** 获取各位置 Banner */
-  banners() {
-    return req('/api/public/banners');
-  },
   /** 获取网站设置 */
   settings() {
     return req('/api/public/settings');
@@ -194,32 +190,6 @@ export const api = {
     /** 删除分类 */
     deleteCategory(id) {
       return authReq(`/api/admin/categories/${id}`, { method: 'DELETE' });
-    },
-
-    // -- Banner（multipart/form-data，支持上传 图片/GIF/视频 文件） --
-    /** 获取 Banner 列表 */
-    banners(pos = '') {
-      return authReq('/api/admin/banners' + (pos ? `?pos=${pos}` : ''));
-    },
-    /** 新增 Banner（formData：position/title/image_url/link_url/media_type/sort_order/duration/media_file） */
-    addBanner(formData) {
-      return authReq('/api/admin/banners', { method: 'POST', body: formData });
-    },
-    /** 编辑 Banner（formData 同上） */
-    editBanner(id, formData) {
-      return authReq(`/api/admin/banners/${id}/edit`, { method: 'POST', body: formData });
-    },
-    /** 切换 Banner 启用状态 */
-    toggleBanner(id) {
-      return authReq(`/api/admin/banners/${id}/toggle`, { method: 'POST' });
-    },
-    /** 上移/下移 Banner（dir: 'up' | 'down'），同位置内交换排序 */
-    moveBanner(id, dir) {
-      return authReq(`/api/admin/banners/${id}/move?dir=${dir}`, { method: 'POST' });
-    },
-    /** 删除 Banner */
-    deleteBanner(id) {
-      return authReq(`/api/admin/banners/${id}`, { method: 'DELETE' });
     },
 
     // -- 设置 --

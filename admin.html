@@ -61,10 +61,6 @@
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
         <span data-i18n="nav_categories">分类管理</span>
       </a>
-      <a class="side-link" data-panel="banners">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-        <span data-i18n="nav_banners">Banner</span>
-      </a>
       <a class="side-link" data-panel="settings">
         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         <span data-i18n="nav_settings">系统设置</span>
@@ -100,7 +96,6 @@
         <div id="statsGrid" class="stat-grid">
           <div class="stat-card"><div class="stat-value grad-text" id="statVideos">-</div><div class="stat-label" data-i18n="stat_videos">视频总数</div></div>
           <div class="stat-card"><div class="stat-value" style="color:#3b82f6;" id="statCats">-</div><div class="stat-label" data-i18n="stat_cats">分类数</div></div>
-          <div class="stat-card"><div class="stat-value" style="color:#10b981;" id="statBanners">-</div><div class="stat-label" data-i18n="stat_banners">Banner（启用）</div></div>
         </div>
         <div class="table-wrap">
           <div class="table-header"><span style="font-weight:600;font-size:.875rem;" data-i18n="recent_uploads">最近上传</span><a href="#" onclick="switchPanel('videos');return false;" class="text-xs text-primary" data-i18n="view_all">查看全部 →</a></div>
@@ -147,31 +142,6 @@
           </div>
           <table><thead><tr><th data-i18n="th_category">分类名称</th><th data-i18n="th_slug">Slug</th><th data-i18n="th_count">视频数</th><th style="text-align:right;" data-i18n="th_actions">操作</th></tr></thead>
           <tbody id="catTableBody"></tbody></table>
-        </div>
-      </section>
-
-      <!-- Banner 管理 -->
-      <section id="panel-banners" class="admin-panel">
-        <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
-          <button class="btn btn-primary" onclick="openBannerModal()" data-i18n="btn_add_banner">+ 新增 Banner</button>
-          <select id="bannerFilter" class="input" style="max-width:140px;" onchange="loadBanners()">
-            <option value="" data-i18n="all">全部</option>
-            <option value="top">顶部 / Top</option>
-            <option value="left">左侧 / Left</option>
-            <option value="right">右侧 / Right</option>
-            <option value="bottom">底部 / Bottom</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <div style="overflow-x:auto;">
-            <table><thead><tr>
-              <th data-i18n="th_preview">预览</th><th data-i18n="th_title">标题</th>
-              <th data-i18n="th_position">位置</th><th data-i18n="th_type">类型</th>
-              <th data-i18n="th_sort">排序</th><th data-i18n="th_status">状态</th>
-              <th style="text-align:right;" data-i18n="th_actions">操作</th>
-            </tr></thead>
-            <tbody id="bannerTableBody"></tbody></table>
-          </div>
         </div>
       </section>
 
@@ -297,43 +267,6 @@
   </div>
 </div>
 
-<!-- Banner 模态框 -->
-<div id="bannerModal" class="modal-backdrop">
-  <div class="modal">
-    <div class="modal-head"><h3 id="bannerModalTitle">新增 Banner</h3><button class="btn-icon" onclick="closeModal('bannerModal')">✕</button></div>
-    <div class="modal-body">
-      <input type="hidden" id="editBannerId">
-      <div class="form-group"><label class="form-label">位置 *</label>
-        <select id="bPos" class="input"><option value="top">顶部全宽</option><option value="left">左侧</option><option value="right">右侧</option><option value="bottom">底部全宽</option></select></div>
-      <div class="form-group"><label class="form-label">标题</label><input id="bTitle" class="input" placeholder="广告标题"></div>
-      <div class="form-group">
-        <label class="form-label">上传媒体文件 <span class="text-muted text-xs">（jpg/png/gif/mp4/webm，留空则用下方 URL）</span></label>
-        <input id="bFile" class="input" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.m4v">
-      </div>
-      <div class="form-group">
-        <label class="form-label">或填媒体 URL <span class="text-muted text-xs">（已上传文件时忽略）</span></label>
-        <input id="bImg" class="input" placeholder="https://...">
-      </div>
-      <div class="form-group"><label class="form-label">媒体类型 <span class="text-muted text-xs">（上传文件时自动识别）</span></label>
-        <select id="bMedia" class="input">
-          <option value="image">图片 Image (jpg/png)</option>
-          <option value="gif">动图 GIF</option>
-          <option value="video">视频 Video (mp4/webm)</option>
-        </select></div>
-      <div class="form-group"><label class="form-label">跳转链接</label><input id="bLink" class="input" placeholder="https://..."></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
-        <div class="form-group"><label class="form-label">排序值</label><input id="bSort" class="input" type="number" value="0"></div>
-        <div class="form-group"><label class="form-label">轮播间隔 (ms)</label><input id="bDur" class="input" type="number" value="3000" min="500" step="500"></div>
-      </div>
-      <div id="bannerHint" class="hidden text-xs" style="background:rgba(99,102,241,.1);color:var(--primary);padding:.5rem .75rem;border-radius:6px;">⏳ 正在上传媒体，请稍候…</div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-outline" onclick="closeModal('bannerModal')">取消</button>
-      <button id="bannerSaveBtn" class="btn btn-primary" onclick="saveBanner()">保存</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast-stack" id="toastStack"></div>
 
 <script type="module">
@@ -395,7 +328,7 @@ window.closeModal = (id) => document.getElementById(id).classList.remove('open')
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 
 // ── 面板切换 ──────────────────────────────────────────────────────────────
-const panelKeys = { dashboard:'nav_dashboard', videos:'nav_videos', categories:'nav_categories', banners:'nav_banners', settings:'nav_settings' };
+const panelKeys = { dashboard:'nav_dashboard', videos:'nav_videos', categories:'nav_categories', settings:'nav_settings' };
 let currentPanelKey = 'nav_dashboard';
 window.switchPanel = function(name) {
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
@@ -411,7 +344,6 @@ function refreshActivePanel(name) {
   if (name === 'dashboard')   loadDashboard();
   if (name === 'videos')      loadVideoTable(videoPage);
   if (name === 'categories')  loadCategories();
-  if (name === 'banners')     loadBanners();
   if (name === 'settings')    loadSettings();
 }
 document.querySelectorAll('.side-link[data-panel]').forEach(l =>
@@ -467,7 +399,6 @@ async function loadDashboard() {
     const s = await api.admin.stats();
     document.getElementById('statVideos').textContent  = s.videos;
     document.getElementById('statCats').textContent    = s.categories;
-    document.getElementById('statBanners').textContent = s.banners;
     const tbody = document.getElementById('recentVideos');
     tbody.innerHTML = (s.recent || []).map(v => `
       <tr>
@@ -776,112 +707,6 @@ window.deleteCategory = async function(id, name) {
   if (!confirm(t2('confirm_del_cat', { x: name }))) return;
   try { await api.admin.deleteCategory(id); loadCategories(); toast(t('deleted'),'success'); }
   catch(e) { toast(e.message,'error'); }
-};
-
-// ── Banner 管理 ────────────────────────────────────────────────────────────
-let bannerItems = [];
-async function loadBanners() {
-  const pos = document.getElementById('bannerFilter').value;
-  tbodyLoading('bannerTableBody', 7);
-  try {
-    const list = await api.admin.banners(pos);
-    bannerItems = list;
-    const tbody = document.getElementById('bannerTableBody');
-    const mediaLabel = { image: t('media_image'), gif: t('media_gif'), video: t('media_video') };
-    const mediaPreview = (b) => {
-      const src = mediaUrl(b.image_url);
-      if (!src) return '—';
-      if (b.media_type === 'video')
-        return `<video src="${src}" muted style="width:80px;height:50px;object-fit:cover;border-radius:6px;"></video>`;
-      return `<img src="${src}" style="width:80px;height:50px;object-fit:cover;border-radius:6px;">`;
-    };
-    tbody.innerHTML = list.map(b => `
-      <tr>
-        <td>${mediaPreview(b)}</td>
-        <td style="font-size:.8125rem;">${b.title||'—'}</td>
-        <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;background:rgba(99,102,241,.15);color:#818cf8;">${b.position}</span></td>
-        <td class="text-muted text-xs">${mediaLabel[b.media_type] || b.media_type || 'image'}</td>
-        <td class="text-muted text-xs">${b.sort_order} · ${b.duration}ms</td>
-        <td><span style="font-size:.7rem;padding:.15rem .5rem;border-radius:999px;${b.is_active?'background:rgba(16,185,129,.15);color:#10b981;':'background:rgba(156,163,175,.1);color:#9ca3af;'}">${b.is_active?t('st_active'):t('st_inactive')}</span></td>
-        <td style="text-align:right;">
-          <div style="display:flex;justify-content:flex-end;gap:.25rem;">
-            <button class="btn btn-outline btn-sm" data-act="up" data-id="${b.id}" title="上移">↑</button>
-            <button class="btn btn-outline btn-sm" data-act="down" data-id="${b.id}" title="下移">↓</button>
-            <button class="btn btn-outline btn-sm" data-act="toggle" data-id="${b.id}">${b.is_active?t('st_inactive'):t('st_active')}</button>
-            <button class="btn btn-outline btn-sm" data-act="edit" data-id="${b.id}" data-i18n="btn_edit">编辑</button>
-            <button class="btn btn-danger btn-sm" data-act="del" data-id="${b.id}" data-i18n="btn_delete">删除</button>
-          </div>
-        </td>
-      </tr>`).join('') || `<tr><td colspan="7" class="text-muted" style="text-align:center;padding:2rem;">${t('empty')}</td></tr>`;
-    applyI18n(document.getElementById('bannerTableBody'));
-  } catch(e) { tbodyError('bannerTableBody', 7); toast(e.message,'error'); }
-}
-
-// Banner 表事件委托：toggle / edit / del 按 data-id 取对象
-document.getElementById('bannerTableBody').addEventListener('click', e => {
-  const btn = e.target.closest('[data-act]');
-  if (!btn) return;
-  const id = Number(btn.dataset.id);
-  const b = bannerItems.find(x => x.id === id);
-  if (btn.dataset.act === 'toggle') toggleBanner(id);
-  else if (btn.dataset.act === 'edit' && b) openBannerModal(b);
-  else if (btn.dataset.act === 'del') deleteBanner(id);
-  else if (btn.dataset.act === 'up' || btn.dataset.act === 'down') moveBanner(id, btn.dataset.act);
-});
-
-// Banner 上移/下移：服务端交换同位置相邻两条的排序，完成后刷新列表
-window.moveBanner = async function(id, dir) {
-  try { await api.admin.moveBanner(id, dir); loadBanners(); }
-  catch (e) { toast(e.message, 'error'); }
-};
-
-window.openBannerModal = function(b = null) {
-  document.getElementById('bannerModalTitle').textContent = b ? t('modal_banner_edit') : t('modal_banner_add');
-  document.getElementById('editBannerId').value = b?.id || '';
-  document.getElementById('bPos').value   = b?.position   || 'top';
-  document.getElementById('bMedia').value = b?.media_type || 'image';
-  document.getElementById('bTitle').value = b?.title      || '';
-  document.getElementById('bImg').value   = b?.image_url  || '';
-  document.getElementById('bLink').value  = b?.link_url   || '';
-  document.getElementById('bSort').value  = b?.sort_order ?? 0;
-  document.getElementById('bDur').value   = b?.duration   ?? 3000;
-  document.getElementById('bFile').value  = '';     // 重置文件输入
-  openModal('bannerModal');
-};
-
-window.saveBanner = async function() {
-  const id = document.getElementById('editBannerId').value;
-  const fd = new FormData();
-  fd.append('position',   document.getElementById('bPos').value);
-  fd.append('media_type', document.getElementById('bMedia').value);
-  fd.append('title',      document.getElementById('bTitle').value);
-  fd.append('image_url',  document.getElementById('bImg').value);
-  fd.append('link_url',   document.getElementById('bLink').value);
-  fd.append('sort_order', parseInt(document.getElementById('bSort').value) || 0);
-  fd.append('duration',   parseInt(document.getElementById('bDur').value)  || 3000);
-  const file = document.getElementById('bFile').files[0];
-  if (file) fd.append('media_file', file);
-
-  // 上传大媒体（视频/GIF）可能耗时：禁用按钮 + 提示，避免重复点击
-  const btn = document.getElementById('bannerSaveBtn');
-  const hint = document.getElementById('bannerHint');
-  btn.disabled = true; btn.textContent = t('saving');
-  if (file) { hint.textContent = t('uploading_banner'); hint.classList.remove('hidden'); }
-  try {
-    id ? await api.admin.editBanner(id, fd) : await api.admin.addBanner(fd);
-    closeModal('bannerModal');
-    loadBanners();
-    toast(id ? t('updated') : t('added'), 'success');
-  } catch(e) { toast(e.message,'error'); }
-  finally { btn.disabled = false; btn.textContent = t('btn_save'); hint.classList.add('hidden'); }
-};
-
-window.toggleBanner = async function(id) {
-  try { await api.admin.toggleBanner(id); loadBanners(); } catch(e) { toast(e.message,'error'); }
-};
-window.deleteBanner = async function(id) {
-  if (!confirm(t('confirm_del_banner'))) return;
-  try { await api.admin.deleteBanner(id); loadBanners(); toast(t('deleted'),'success'); } catch(e) { toast(e.message,'error'); }
 };
 
 // ── 系统设置 ──────────────────────────────────────────────────────────────

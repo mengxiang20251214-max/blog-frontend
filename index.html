@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VideoHub Pro</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 </head>
 <body>
 
@@ -68,12 +67,6 @@
   <div class="drawer-cats" id="drawerCats"></div>
 </aside>
 
-<!-- 双列 Banner（顶部并排两个，复用 top 位置；手机端单列堆叠） -->
-<div class="dual-banner" id="dualBanner" style="display:none;">
-  <a class="dual-banner-item" id="dualBanner1" rel="noopener" style="display:none;"></a>
-  <a class="dual-banner-item" id="dualBanner2" rel="noopener" style="display:none;"></a>
-</div>
-
 <!-- 主布局：左内容瀑布流 + 右分类栏 -->
 <div class="layout">
   <main class="layout-main">
@@ -98,34 +91,15 @@
       <h3 class="side-widget-title" data-i18n="hot_tags">热门标签</h3>
       <div class="tag-cloud" id="hotTags"></div>
     </section>
-    <!-- 侧边广告（复用 right 位置） -->
-    <section class="side-widget side-ad" id="sideAdWidget" style="display:none;">
-      <div id="sideAd"></div>
-    </section>
-    <!-- 下载 / 客服按钮 -->
-    <section class="side-widget" id="sideActionsWidget" style="display:none;">
-      <div class="side-actions" id="sideActions"></div>
-    </section>
   </aside>
-</div>
-
-<!-- 底部全宽推广 Banner（保留 bottom 位置） -->
-<div class="band-wrap">
-  <div id="bannerBottom" class="banner-bottom" style="display:none;">
-    <div class="swiper swiper-bottom">
-      <div class="swiper-wrapper" id="bannerBottomSlides"></div>
-      <div class="swiper-pagination swiper-pagination-bottom"></div>
-    </div>
-  </div>
 </div>
 
 <footer id="footer">© 2024 VideoHub Pro</footer>
 <div class="toast-stack" id="toastStack"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script type="module">
 import { api, isLoggedIn, mediaUrl } from './js/api.js';
-import { applyI18n, setRuntimeLang, t, safeUrl, esc, renderSideButtons } from './js/main.js';
+import { applyI18n, setRuntimeLang, t, esc } from './js/main.js';
 import { setupDrawer } from './js/menu.js';
 
 setRuntimeLang('id');
@@ -227,64 +201,6 @@ function renderPagination() {
 }
 window.goPage = (p) => { state.page = p; loadVideos(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-// ── Banner（双列顶部 + 侧边广告 + 底部）──────────────────────────────────────
-function bannerMedia(b) {
-  const src = mediaUrl(b.image_url);
-  if (!src) return '';
-  return b.media_type === 'video'
-    ? `<video src="${src}" autoplay muted loop playsinline></video>`
-    : `<img src="${src}" alt="${esc(b.title || '')}" loading="lazy">`;
-}
-
-async function loadBanners() {
-  try {
-    const data = await api.banners();
-
-    // 双列 Banner：复用 top 位置（取前两条；只有一条则单列全宽）
-    const tops = (data.top || []).filter(b => mediaUrl(b.image_url));
-    if (tops.length) {
-      const dual = document.getElementById('dualBanner');
-      dual.style.display = '';
-      const setItem = (el, b) => {
-        const link = safeUrl(b.link_url);
-        el.href = link || '#';
-        if (link) el.target = '_blank'; else el.removeAttribute('target');
-        el.innerHTML = bannerMedia(b);
-        el.style.display = '';
-      };
-      setItem(document.getElementById('dualBanner1'), tops[0]);
-      if (tops.length >= 2) setItem(document.getElementById('dualBanner2'), tops[1]);
-      else dual.classList.add('single');
-    }
-
-    // 侧边广告：复用 right 位置（堆叠展示）
-    const rights = (data.right || []).filter(b => mediaUrl(b.image_url));
-    if (rights.length) {
-      document.getElementById('sideAd').innerHTML = rights.map(b => {
-        const link = safeUrl(b.link_url);
-        return `<a class="side-ad-item" href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>${bannerMedia(b)}</a>`;
-      }).join('');
-      document.getElementById('sideAdWidget').style.display = '';
-    }
-
-    // 底部 Banner（保留 bottom 位置）
-    const bottoms = (data.bottom || []).filter(b => mediaUrl(b.image_url));
-    if (bottoms.length) {
-      document.getElementById('bannerBottom').style.display = '';
-      document.getElementById('bannerBottomSlides').innerHTML = bottoms.map(b => {
-        const link = safeUrl(b.link_url);
-        return `<div class="swiper-slide"><a href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>${bannerMedia(b)}</a></div>`;
-      }).join('');
-      new Swiper('.swiper-bottom', {
-        loop: bottoms.length > 1,
-        autoplay: bottoms.length > 1 ? { delay: bottoms[0].duration || 4000, disableOnInteraction: false } : false,
-        pagination: { el: '.swiper-pagination-bottom', clickable: true },
-        speed: 500,
-      });
-    }
-  } catch { }
-}
-
 // ── 分类列表 + 热门标签 + 抽屉分类 ─────────────────────────────────────────
 async function loadCategories() {
   try {
@@ -347,26 +263,17 @@ document.getElementById('searchInput').addEventListener('input', e => {
   searchTimer = setTimeout(() => { state.q = e.target.value; state.page = 1; loadVideos(); }, 400);
 });
 
-// ── 网站设置 + 下载/客服按钮 ───────────────────────────────────────────────
+// ── 网站设置 ───────────────────────────────────────────────────────────────
 async function loadSettings() {
   try {
     const s = await api.settings();
     if (s.site_name) { document.getElementById('siteName').textContent = s.site_name; document.title = s.site_name; }
     if (s.footer_text) document.getElementById('footer').textContent = s.footer_text;
-
-    const downloads = (s.download_apps && s.download_apps.length)
-      ? s.download_apps : (s.app_download_url ? [{ name: '', url: s.app_download_url }] : []);
-    const contacts = (s.contacts && s.contacts.length)
-      ? s.contacts : (s.contact_url ? [{ name: '', url: s.contact_url }] : []);
-    const box = document.getElementById('sideActions');
-    if (renderSideButtons(downloads, contacts, box))
-      document.getElementById('sideActionsWidget').style.display = '';
   } catch { }
 }
 
 // ── 初始化 ────────────────────────────────────────────────────────────────
 loadSettings();
-loadBanners();
 loadCategories();
 loadVideos();
 </script>

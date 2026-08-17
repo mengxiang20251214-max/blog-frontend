@@ -247,27 +247,6 @@ select.input { cursor: pointer; }
   width: 18px; height: 2px; border-radius: 2px; background: var(--grad);
 }
 
-/* ── 全宽 Banner 带 ──────────────────────────────────────────────────────── */
-.band-wrap { width: 100%; }
-.banner-top, .banner-bottom {
-  max-width: 1600px; margin: 0 auto; width: 100%;
-  overflow: hidden; position: relative;
-}
-.banner-top { padding: 1rem 1.5rem 0; }
-.banner-bottom { padding: .5rem 1.5rem 1.25rem; }
-.banner-top .swiper, .banner-bottom .swiper { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-.banner-top .swiper-slide img,  .banner-top .swiper-slide video,
-.banner-bottom .swiper-slide img, .banner-bottom .swiper-slide video {
-  width: 100%; height: 190px; object-fit: cover; display: block;
-}
-.banner-top .swiper-button-prev, .banner-top .swiper-button-next {
-  width: 30px !important; height: 30px !important;
-  background: rgba(0,0,0,.5); border-radius: 50%; backdrop-filter: blur(4px);
-}
-.banner-top .swiper-button-prev::after, .banner-top .swiper-button-next::after { font-size: 12px !important; color: #fff; }
-.swiper-pagination-bullet { background: rgba(255,255,255,.5) !important; }
-.swiper-pagination-bullet-active { background: #fff !important; width: 18px !important; border-radius: 3px !important; }
-
 /* ── 视频详情页容器（video.html 使用） ──────────────────────────────────── */
 .page-layout { max-width: 1100px; margin: 0 auto; padding: 1.5rem; min-height: calc(100vh - 60px); }
 .page-main { min-width: 0; }
@@ -286,118 +265,14 @@ select.input { cursor: pointer; }
 .home-aside { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 1rem; }
 .home-main { min-width: 0; }
 
-/* 玻璃卡片（侧栏 Banner 容器） */
+/* 玻璃卡片（侧栏容器） */
 .side-card {
   background: var(--glass); border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg); overflow: hidden;
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
 }
-.sidebar-banner { height: 380px; }
-.sidebar-banner img, .sidebar-banner video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* 右侧固定操作按钮 */
-.side-actions { display: flex; flex-direction: column; gap: .75rem; }
-.action-btn {
-  display: flex; align-items: center; justify-content: center; gap: .6rem;
-  padding: .9rem 1rem; border-radius: 16px; font-size: .9rem; font-weight: 700;
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
-}
-.action-btn svg { flex-shrink: 0; }
-.action-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-.action-download { background: var(--grad-gold); color: #1c1606; box-shadow: var(--shadow-gold); }
-.action-contact  { background: var(--grad); color: #fff; box-shadow: 0 8px 28px rgba(110,121,232,.3); }
-
-/* 右侧多按钮（2 下载 + 2 客服）—— 下载紫、WhatsApp 绿、Telegram 蓝 */
-.app-btn-group { display: flex; flex-direction: column; gap: .6rem; }
-.app-btn-group + .app-btn-group { margin-top: .85rem; padding-top: .85rem; border-top: 1px dashed var(--glass-border); }
-.app-btn {
-  position: relative; overflow: hidden;
-  display: flex; align-items: center; gap: .65rem; padding: .75rem .95rem; min-height: 44px;
-  border-radius: 40px; font-size: .875rem; font-weight: 700; color: #fff;
-  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
-}
-.app-btn__icon { display: flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; background: rgba(255,255,255,.2); flex-shrink: 0; transition: transform .3s ease; }
-.app-btn__text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.app-btn__arrow { opacity: .65; flex-shrink: 0; transition: transform .2s ease; }
-/* 悬停：上移 3px + 亮度 +10% + 阴影增强；点击：下移 1px 按压感（0.2s ease）*/
-.app-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
-.app-btn:hover .app-btn__icon { transform: scale(1.12) rotate(-6deg); }
-.app-btn:hover .app-btn__arrow { transform: translate(2px, -2px); opacity: 1; }
-.app-btn:active { transform: translateY(1px); filter: brightness(1.02); }
-/* 悬停扫光：下载 + 客服按钮通用 */
-.app-btn::after {
-  content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
-  background: linear-gradient(115deg, transparent, rgba(255,255,255,.6), transparent);
-  transform: skewX(-20deg); pointer-events: none;
-}
-.app-btn:hover::after { animation: app-btn-shine .9s ease forwards; }
-
-/* 下载按钮：呼吸光晕，比联系客服按钮更醒目、更强调「点我下载」。
-   同组内第 1/2/3 个按钮分别是金/橙/粉三种配色，第 4 个起循环回金色，便于区分多个下载渠道。 */
-.app-btn--download {
-  background: var(--grad-gold); color: #1c1606;
-  box-shadow: 0 8px 22px rgba(200,162,79,.4);
-  animation: app-btn-glow-gold 2.6s ease-in-out infinite;
-}
-.app-btn--download .app-btn__icon { background: rgba(28,22,6,.14); }
-.app-btn--download:hover { animation-play-state: paused; box-shadow: 0 10px 28px rgba(200,162,79,.6); }
-
-.app-btn-group .app-btn--download:nth-child(3n+2) {
-  background: linear-gradient(135deg, #ff9a76 0%, #f2542d 100%); color: #fff;
-  box-shadow: 0 8px 22px rgba(242,84,45,.4);
-  animation-name: app-btn-glow-orange;
-}
-.app-btn-group .app-btn--download:nth-child(3n+2) .app-btn__icon { background: rgba(255,255,255,.22); }
-.app-btn-group .app-btn--download:nth-child(3n+2):hover { box-shadow: 0 10px 28px rgba(242,84,45,.6); }
-
-.app-btn-group .app-btn--download:nth-child(3n) {
-  background: linear-gradient(135deg, #f472b6 0%, #db2777 100%); color: #fff;
-  box-shadow: 0 8px 22px rgba(219,39,119,.4);
-  animation-name: app-btn-glow-pink;
-}
-.app-btn-group .app-btn--download:nth-child(3n) .app-btn__icon { background: rgba(255,255,255,.22); }
-.app-btn-group .app-btn--download:nth-child(3n):hover { box-shadow: 0 10px 28px rgba(219,39,119,.6); }
-
-/* 客服按钮：WhatsApp / Telegram 保留各自品牌色（用户靠图标+颜色识别，不能乱改）；
-   其余客服渠道（比如以后加的第三个）按位置循环配色，呼应下载按钮的视觉语言但不撞色。 */
-.app-btn--whatsapp { background: linear-gradient(135deg, #25d366, #128c4b); box-shadow: 0 8px 22px rgba(37,211,102,.3); }
-.app-btn--whatsapp:hover { box-shadow: 0 10px 26px rgba(37,211,102,.5); }
-.app-btn--telegram { background: linear-gradient(135deg, #2aabee, #1c8fd1); box-shadow: 0 8px 22px rgba(42,171,238,.3); }
-.app-btn--telegram:hover { box-shadow: 0 10px 26px rgba(42,171,238,.5); }
-.app-btn--contact  { background: var(--grad); box-shadow: 0 8px 22px rgba(110,121,232,.3); }
-.app-btn--contact:hover { box-shadow: 0 10px 26px rgba(110,121,232,.5); }
-.app-btn-group .app-btn--contact:nth-of-type(2) {
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-  box-shadow: 0 8px 22px rgba(124,58,237,.35);
-}
-.app-btn-group .app-btn--contact:nth-of-type(2):hover { box-shadow: 0 10px 26px rgba(124,58,237,.55); }
-.app-btn-group .app-btn--contact:nth-of-type(3) {
-  background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
-  box-shadow: 0 8px 22px rgba(8,145,178,.35);
-}
-.app-btn-group .app-btn--contact:nth-of-type(3):hover { box-shadow: 0 10px 26px rgba(8,145,178,.55); }
-
-@keyframes app-btn-glow-gold {
-  0%, 100% { box-shadow: 0 8px 22px rgba(200,162,79,.4); }
-  50%      { box-shadow: 0 8px 30px rgba(200,162,79,.7); }
-}
-@keyframes app-btn-glow-orange {
-  0%, 100% { box-shadow: 0 8px 22px rgba(242,84,45,.4); }
-  50%      { box-shadow: 0 8px 30px rgba(242,84,45,.7); }
-}
-@keyframes app-btn-glow-pink {
-  0%, 100% { box-shadow: 0 8px 22px rgba(219,39,119,.4); }
-  50%      { box-shadow: 0 8px 30px rgba(219,39,119,.7); }
-}
-@keyframes app-btn-shine {
-  from { left: -60%; }
-  to   { left: 130%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-btn--download { animation: none; }
-  .app-btn::after { display: none; }
-}
 
 /* ── 汉堡菜单 + 侧滑抽屉（移动端导航） ───────────────────────────────────── */
 .nav-hamburger {
@@ -428,19 +303,6 @@ select.input { cursor: pointer; }
 .drawer-cats { display: flex; flex-wrap: wrap; gap: .4rem; padding: .5rem .25rem; }
 .drawer-cat { padding: .4rem .8rem; border-radius: 999px; font-size: .8rem; border: 1px solid var(--border); color: var(--muted); background: transparent; }
 .drawer-cat.active, .drawer-cat:hover { border-color: transparent; background: var(--grad); color: #fff; }
-
-/* ── 双列 Banner（顶部并排） ─────────────────────────────────────────────── */
-.dual-banner {
-  max-width: 1600px; margin: 0 auto; padding: 1.25rem 1.5rem 0;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-}
-.dual-banner.single { grid-template-columns: 1fr; }
-.dual-banner-item {
-  display: block; border-radius: var(--radius); overflow: hidden;
-  background: #0a0a0a; box-shadow: var(--shadow); aspect-ratio: 16 / 5;
-  transition: transform .3s cubic-bezier(.2,.9,.4,1.1), box-shadow .3s cubic-bezier(.2,.9,.4,1.1);
-}
-.dual-banner-item img, .dual-banner-item video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ── 主布局：内容 + 右分类栏 ─────────────────────────────────────────────── */
 .layout {
@@ -494,10 +356,6 @@ select.input { cursor: pointer; }
 .tag-cloud .tag:nth-child(6n+4) { --tag-accent: linear-gradient(135deg, #34d399, #059669); --tag-shadow: rgba(5,150,105,.35); }
 .tag-cloud .tag:nth-child(6n+5) { --tag-accent: linear-gradient(135deg, #f472b6, #db2777); --tag-shadow: rgba(219,39,119,.35); }
 .tag-cloud .tag:nth-child(6n)   { --tag-accent: linear-gradient(135deg, #2aabee, #1c8fd1); --tag-shadow: rgba(28,143,209,.35); }
-.side-ad { padding: .5rem; }
-.side-ad-item { display: block; border-radius: 12px; overflow: hidden; margin-bottom: .5rem; transition: transform .3s cubic-bezier(.2,.9,.4,1.1), box-shadow .3s cubic-bezier(.2,.9,.4,1.1); }
-.side-ad-item:last-child { margin-bottom: 0; }
-.side-ad-item img, .side-ad-item video { width: 100%; height: auto; display: block; }
 
 /* ── 区块标题 ────────────────────────────────────────────────────────────── */
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
@@ -727,33 +585,15 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
 
 /* 悬停变形仅在「支持悬停」的设备（桌面）生效，避免触摸端「张贴」式卡住 */
 @media (hover: hover) {
-  /* 广告卡：上浮 5px + 阴影 + 紫/金发光边缘 */
-  .dual-banner-item:hover, .side-ad-item:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hov), 0 0 22px rgba(110,121,232,.20), 0 0 30px rgba(216,180,106,.10);
-  }
-  /* 扫光：视频卡 + 广告卡，悬停时高光从左上扫到右下 */
-  .video-card:hover::before, .dual-banner-item:hover::before, .side-ad-item:hover::before { transform: translateX(130%); opacity: 1; }
-  /* 图片缓慢放大（Ken Burns / Zoom In）*/
-  .dual-banner-item:hover img, .dual-banner-item:hover video,
-  .side-ad-item:hover img, .side-ad-item:hover video { transform: scale(1.05); }
-  /* CTA（下载/客服）：放大 1.05 + 金色发光 + 阴影增强 */
-  .app-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 26px rgba(110,121,232,.34), 0 0 22px rgba(216,180,106,.32); filter: brightness(1.08); }
+  /* 扫光：视频卡悬停时高光从左上扫到右下 */
+  .video-card:hover::before { transform: translateX(130%); opacity: 1; }
   /* 后台入口：文字高亮 + Logo 轻旋 */
   #adminLink:hover { color: var(--text); }
   .navbar-brand:hover .brand-icon { transform: rotate(-8deg) scale(1.05); }
 }
 .brand-icon { transition: transform .35s var(--ease); }
 
-/* 广告卡：相对定位 + 扫光层 + 图片 Zoom 过渡（与视频卡统一） */
-.dual-banner-item, .side-ad-item { position: relative; }
-.dual-banner-item::before, .side-ad-item::before {
-  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit;
-  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.18) 46%, rgba(216,180,106,.22) 50%, transparent 64%);
-  transform: translateX(-130%); opacity: 0;
-}
-.video-card::before, .dual-banner-item::before, .side-ad-item::before { transition: transform .6s var(--ease), opacity .6s ease; }
-.dual-banner-item img, .dual-banner-item video, .side-ad-item img, .side-ad-item video { transition: transform .6s var(--ease); }
+.video-card::before { transition: transform .6s var(--ease), opacity .6s ease; }
 
 /* 页面加载淡入（保留为无 JS 时的兜底动画）*/
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
@@ -810,7 +650,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .anim-in { animation: none; }
   .sr { opacity: 1; transform: none; }
   .bg-aurora::after, .bg-aurora::before { animation: none; opacity: .2; }
-  .video-card::before, .dual-banner-item::before, .side-ad-item::before { display: none; }
+  .video-card::before { display: none; }
   .to-top { transition: opacity .2s ease; }
   * { scroll-behavior: auto; }
 }
@@ -825,22 +665,12 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
 /* 平板：缩小侧栏 */
 @media (max-width: 1180px) {
   .home { --aside: 210px; gap: 1rem; }
-  .sidebar-banner { height: 320px; }
 }
-/* 中屏：折叠为单列。手机端同样显示左右广告——左广告置顶、右广告+按钮在内容后 */
+/* 中屏：折叠为单列 */
 @media (max-width: 980px) {
   .home, .home.has-left, .home.has-right, .home.has-left.has-right { grid-template-columns: minmax(0, 1fr); }
   .home-aside { position: static; flex-direction: column; gap: .85rem; }
-  /* 不再用 order 把广告挤到最底部：自然顺序 = 左广告 → 视频 → 右广告 */
   .side-card { flex: 1 1 100%; }
-  .sidebar-banner { height: 160px; }           /* 手机端广告紧凑些，不喧宾夺主 */
-  /* 旧单按钮版（保留兼容） */
-  .side-actions { flex: 1 1 100%; flex-direction: column; }
-  .action-btn { flex: 1; }
-  /* 新多按钮版：每组横向铺成一排（下载1|下载2 / 客服1|客服2） */
-  .app-btn-group { flex-direction: row; }
-  .app-btn { flex: 1; min-width: 0; }
-  .app-btn-group + .app-btn-group { border-top: none; margin-top: .6rem; padding-top: 0; }
 }
 @media (max-width: 768px) {
   .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
@@ -848,18 +678,13 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   /* 移动端导航：显示汉堡、隐藏桌面菜单链接（改用侧滑抽屉） */
   .nav-hamburger { display: inline-flex; }
   .navbar-links { display: none; }
-  /* 双列 Banner → 单列全宽堆叠 */
-  .dual-banner { grid-template-columns: 1fr; gap: 12px; padding: 1rem 1rem 0; }
-  .dual-banner-item { aspect-ratio: 16 / 6; }
   .layout { padding: 1rem; gap: 1rem; }
-  /* 手机版重排：热门分类栏置顶 → 视频 → 侧边广告 → 下载/客服按钮（底部）。
+  /* 手机版重排：热门分类栏置顶 → 视频。
      display:contents 让右侧栏各部件「升级」为 .layout 的直接网格子项，从而可单独 order 排序。 */
   .layout-side { display: contents; }
   #categories { display: none; }              /* 竖排分类列表隐藏：顶部热门栏 + 汉堡抽屉已覆盖分类入口 */
   #hotTagsWidget { order: 1; }                /* 热门分类栏 → 视频之前 */
   .layout-main   { order: 2; }                /* 双列视频卡片 */
-  #sideAdWidget  { order: 3; }                /* 侧边广告（视频之后，保留曝光） */
-  #sideActionsWidget { order: 5; }            /* 下载/客服按钮 → 底部 */
   /* 热门分类栏改横向滚动，不换行 */
   #hotTagsWidget .tag-cloud {
     flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
@@ -870,14 +695,6 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .stat-grid { grid-template-columns: 1fr; }
   .admin-sidebar { width: 58px; }
   .admin-sidebar .side-link span { display: none; }
-  /* 广告图片完整显示不裁剪：contain + 深色背景填补留白（横/竖/方图都完整可见）。
-     注：Swiper 已初始化，纯 CSS 改 height:auto 会打乱其布局，故保留固定高度仅换 object-fit。 */
-  .banner-top .swiper-slide img, .banner-top .swiper-slide video,
-  .banner-bottom .swiper-slide img, .banner-bottom .swiper-slide video {
-    height: 130px; object-fit: contain; background: #0a0a0a;
-  }
-  .sidebar-banner { height: 200px; }                 /* 侧栏广告加高，竖/方图看得更清 */
-  .sidebar-banner img, .sidebar-banner video { object-fit: contain; background: #0a0a0a; }
   /* 视频详情页：减小内边距，播放器限高，避免在小屏上过大 */
   .page-layout { padding: 1rem .85rem; }
   .player-wrap iframe, .player-wrap video, .player-wrap .plyr { max-height: 56vh; }
@@ -892,14 +709,9 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
   .navbar-brand span { display: none; }
   .navbar-search { max-width: none; }
   .home { padding: 1rem; }
-  .banner-top, .banner-bottom { padding-left: 1rem; padding-right: 1rem; }
   .filter-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
   .filter-row::-webkit-scrollbar { display: none; }
 }
 @media (max-width: 460px) {
   .video-grid { grid-template-columns: minmax(0, 1fr); }
-  .side-actions { flex-direction: column; }
-  .sidebar-banner { height: 180px; }   /* 窄屏侧栏广告略降，contain 仍完整不裁剪 */
-  /* 极窄屏：下载/客服按钮各自独占一行，文字不挤 */
-  .app-btn-group { flex-direction: column; }
 }
