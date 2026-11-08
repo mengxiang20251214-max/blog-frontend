@@ -234,6 +234,27 @@ export function safeUrl(u) {
 }
 
 /**
+ * 严格的外部网址校验：只接受带主机名的完整 http:// 或 https:// 地址，
+ * 拒绝 javascript:、data:、//host、user@host 及含空白的输入。不合法返回 ''。
+ */
+export function httpUrl(u) {
+  const s = String(u ?? '').trim();
+  if (!s || s.length > 2048 || /[\s\u0000-\u001f\u007f]/.test(s) || !/^https?:\/\//i.test(s)) return '';
+  try {
+    const url = new URL(s);
+    if (!/^https?:$/.test(url.protocol) || !url.hostname || url.username || url.password) return '';
+    return s;
+  } catch { return ''; }
+}
+
+/** 页头 Logo 跳转：配置了合法网址就在当前标签页打开它，否则保持原来的返回首页 */
+export function applyLogoLink(link) {
+  const a = document.querySelector('.navbar-brand');
+  const u = httpUrl(link);
+  if (a && u) a.href = u;
+}
+
+/**
  * HTML 转义：把视频标题/分类名等数据安全插入到 innerHTML / 属性值里。
  * 标题里含有 < > " ' & 时既不会破坏布局，也挡掉 onerror= 之类的注入。
  */

@@ -126,7 +126,8 @@ export const api = {
   },
   /** 获取网站设置 */
   settings() {
-    return req('/api/public/settings');
+    // no-cache：每次向后端确认，后台改了 Logo 跳转等设置后，用户刷新即可生效
+    return req('/api/public/settings', { cache: 'no-cache' });
   },
 
   // ── 认证 ────────────────────────────────────────────────────────────────

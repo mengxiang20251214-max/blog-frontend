@@ -156,6 +156,16 @@
               <div class="form-group"><label class="form-label">网站描述</label><textarea id="setDesc" class="input" rows="2" style="resize:none;"></textarea></div>
               <div class="form-group"><label class="form-label">SEO 关键词</label><input id="setKeys" class="input" placeholder="视频,博客"></div>
               <div class="form-group"><label class="form-label">底部版权</label><input id="setFooter" class="input" placeholder="© 2024 VideoHub Pro."></div>
+              <div class="form-group">
+                <label class="form-label" for="setLogoLink">Logo 跳转网址 <span class="text-muted text-xs">（可选）</span></label>
+                <input id="setLogoLink" class="input" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+                       placeholder="https://example.com" aria-describedby="setLogoLinkHint setLogoLinkErr">
+                <div id="setLogoLinkHint" class="text-muted text-xs" style="margin-top:.35rem;line-height:1.5;">
+                  填写完整的 http:// 或 https:// 地址，点击首页和视频页的 Logo 会在当前标签页打开；留空则返回首页。<br>
+                  当前生效：<span id="setLogoLinkCurrent" style="word-break:break-all;">返回首页</span>
+                </div>
+                <div id="setLogoLinkErr" class="hidden" role="alert" style="color:#ef4444;font-size:.75rem;margin-top:.35rem;"></div>
+              </div>
 
               <!-- 顶部公告栏 -->
               <div style="border-top:1px solid var(--border);margin:.25rem 0 .25rem;padding-top:.9rem;font-weight:600;font-size:.8125rem;">📢 顶部公告栏</div>
@@ -271,7 +281,7 @@
 
 <script type="module">
 import { api, isLoggedIn, clearToken, mediaUrl } from './js/api.js';
-import { applyI18n, setLang, getLang, t, t2, fmtBytes, LANG_LABELS, SUPPORTED_LANGS } from './js/main.js';
+import { applyI18n, setLang, getLang, t, t2, fmtBytes, LANG_LABELS, SUPPORTED_LANGS, httpUrl } from './js/main.js';
 
 // 通用：给表格 tbody 显示 loading / 错误行（Item 5）
 function tbodyLoading(id, cols) {
@@ -710,7 +720,18 @@ window.deleteCategory = async function(id, name) {
 };
 
 // ── 系统设置 ──────────────────────────────────────────────────────────────
+// 设置读取成功前不允许保存：否则表单为空，保存会把其他设置清空
+let settingsLoaded = false;
+
+function setLogoLinkError(msg) {
+  const el = document.getElementById('setLogoLinkErr');
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+  document.getElementById('setLogoLink').style.borderColor = msg ? '#ef4444' : '';
+}
+
 async function loadSettings() {
+  settingsLoaded = false;
   try {
     const s = await api.admin.getSettings();
     document.getElementById('setName').value   = s.site_name        || '';
@@ -723,7 +744,14 @@ async function loadSettings() {
     document.getElementById('annLink').value     = s.announcement_link     || '';
     document.getElementById('annAutoHide').value = s.announcement_auto_hide || '0';
     document.getElementById('annColor').value    = /^#[0-9a-fA-F]{6}$/.test(s.announcement_color || '') ? s.announcement_color : '#6366f1';
-  } catch { }
+    // Logo 跳转网址
+    document.getElementById('setLogoLink').value = s.logo_link || '';
+    document.getElementById('setLogoLinkCurrent').textContent = httpUrl(s.logo_link) || '返回首页';
+    setLogoLinkError('');
+    settingsLoaded = true;
+  } catch (e) {
+    if (e?.message !== '__SESSION_EXPIRED__') toast('设置加载失败，请刷新页面后再保存', 'error');
+  }
   loadBackups();
 }
 
@@ -759,6 +787,14 @@ window.runBackup = async function() {
 };
 
 window.saveSettings = async function() {
+  if (!settingsLoaded) { toast('设置尚未加载成功，请刷新页面后再保存', 'error'); return; }
+  const logoLink = document.getElementById('setLogoLink').value.trim();
+  if (logoLink && !httpUrl(logoLink)) {
+    setLogoLinkError('请填写完整的 http:// 或 https:// 地址，例如 https://example.com；留空则返回首页');
+    document.getElementById('setLogoLink').focus();
+    return;
+  }
+  setLogoLinkError('');
   try {
     await api.admin.saveSettings({
       site_name:        document.getElementById('setName').value,
@@ -771,10 +807,21 @@ window.saveSettings = async function() {
       announcement_link:      document.getElementById('annLink').value,
       announcement_auto_hide: String(parseInt(document.getElementById('annAutoHide').value, 10) || 0),
       announcement_color:     document.getElementById('annColor').value,
+      logo_link:              logoLink,
     });
+    // 重新读取，确认后端确实保存了 Logo 跳转网址（后端版本过旧时会忽略该字段）
+    await loadSettings();
+    if (settingsLoaded && document.getElementById('setLogoLink').value !== logoLink) {
+      toast('其他设置已保存，但 Logo 跳转网址未被后端保存，请确认后端已更新', 'error');
+      return;
+    }
     document.getElementById('settingsSaved').classList.remove('hidden');
     setTimeout(() => document.getElementById('settingsSaved').classList.add('hidden'), 3000);
-  } catch(e) { toast(e.message,'error'); }
+    toast('设置已保存', 'success');   // 横幅在面板顶部，点底部保存按钮时可能不在可视区域
+  } catch(e) {
+    if (/Logo/.test(e.message)) setLogoLinkError(e.message);
+    toast(e.message,'error');
+  }
 };
 
 // ── 修改密码 ──────────────────────────────────────────────────────────────

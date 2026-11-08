@@ -72,7 +72,7 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script type="module">
 import { api, mediaUrl } from './js/api.js';
-import { applyI18n, setRuntimeLang, t, esc } from './js/main.js';
+import { applyI18n, setRuntimeLang, t, esc, applyLogoLink } from './js/main.js';
 
 // 前台视频详情页与首页一致，固定印尼语
 setRuntimeLang('id');
@@ -194,6 +194,7 @@ async function loadSettings() {
       const siteNameEl = document.getElementById('siteName');   // 页头已改为 Logo，元素可能不存在
       if (siteNameEl) siteNameEl.textContent = s.site_name;
     }
+    applyLogoLink(s.logo_link);   // 留空 / 旧数据 / 非法值 → 保持返回首页
   } catch { }
 }
 
