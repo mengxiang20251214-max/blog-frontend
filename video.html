@@ -12,13 +12,8 @@
 <!-- 导航栏 -->
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="index.html" class="navbar-brand">
-      <div class="brand-icon">
-        <svg width="16" height="16" fill="white" viewBox="0 0 20 20">
-          <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
-        </svg>
-      </div>
-      <span class="grad-text" id="siteName">VideoHub Pro</span>
+    <a href="index.html" class="navbar-brand" aria-label="PKONE 首页">
+      <div class="brand-logo"><img src="images/pkone-logo.png" alt="PKONE" width="452" height="72" decoding="async"></div>
     </a>
     <div class="navbar-links">
       <a href="index.html" class="nav-link" data-i18n="back_home">← 返回首页</a>
@@ -195,7 +190,10 @@ async function loadVideo() {
 async function loadSettings() {
   try {
     const s = await api.settings();
-    if (s.site_name) document.getElementById('siteName').textContent = s.site_name;
+    if (s.site_name) {
+      const siteNameEl = document.getElementById('siteName');   // 页头已改为 Logo，元素可能不存在
+      if (siteNameEl) siteNameEl.textContent = s.site_name;
+    }
   } catch { }
 }
 

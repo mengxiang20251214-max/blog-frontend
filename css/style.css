@@ -229,6 +229,11 @@ select.input { cursor: pointer; }
   background: var(--grad); display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,.35);
 }
+/* PKONE Logo（首页 / 视频页）
+   images/pkone-logo.png 是从原图 PKONELOGO.png 提取的透明背景版（452×72），
+   由 --logo-h 控制高度，宽度按比例自动计算。 */
+.brand-logo { --logo-h: 34px; display: block; flex-shrink: 0; height: var(--logo-h); }
+.brand-logo img { display: block; height: 100%; width: auto; max-width: none; }
 .navbar-search { flex: 1; max-width: 460px; position: relative; }
 .navbar-search input { padding-left: 2.4rem; border-radius: 999px; background: var(--bg2); }
 .navbar-search .search-icon {
@@ -707,6 +712,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
 @media (max-width: 640px) {
   .navbar-inner { gap: .6rem; padding: 0 1rem; }
   .navbar-brand span { display: none; }
+  .brand-logo { --logo-h: 26px; }
   .navbar-search { max-width: none; }
   .home { padding: 1rem; }
   .filter-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
@@ -714,4 +720,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem; margin-top: 2.5re
 }
 @media (max-width: 460px) {
   .video-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 380px) {
+  .brand-logo { --logo-h: 21px; }
 }
